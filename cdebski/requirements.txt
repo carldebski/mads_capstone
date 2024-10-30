@@ -1,7 +1,0 @@
-gtab==0.8
-html5lib @ file:///home/conda/feedstock_root/build_artifacts/html5lib_1592930327044/work
-matplotlib @ file:///C:/b/abs_ddmsoovv14/croot/matplotlib-suite_1713336426307/work
-matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1713250518406/work
-pandas @ file:///C:/b/abs_3awk0iw2ab/croot/pandas_1709590545218/work/dist/pandas-2.2.1-cp312-cp312-win_amd64.whl#sha256=8f9837b9f672189b7e2df7dcf64b91243a78b0fad6e1125220b33a39b5c9e598
-pytrends @ file:///home/conda/feedstock_root/build_artifacts/pytrends_1673540560668/work
-urllib3 @ file:///C:/b/abs_eeswtzv5iq/croot/urllib3_1718978558630/work
