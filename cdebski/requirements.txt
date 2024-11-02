@@ -1,0 +1,43 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: win-64
+certifi=2024.8.30=py312haa95532_0
+charset-normalizer=3.3.2=pyhd8ed1ab_0
+contourpy=1.2.0=py312h59b6b97_0
+cycler=0.11.0=pyhd3eb1b0_0
+gensim=4.3.3=py312h0158946_0
+gtab=0.8=pypi_0
+idna=3.7=pyhd8ed1ab_0
+ipykernel=6.29.3=pyha63f2e9_0
+ipython=8.25.0=pyh7428d3b_0
+libclang=14.0.6=default_hb5a9fac_1
+libclang13=14.0.6=default_h8e68704_1
+lxml=5.2.2=py312h56c7e3b_0
+matplotlib=3.8.4=py312haa95532_0
+matplotlib-base=3.8.4=py312hc7c4135_0
+matplotlib-inline=0.1.7=pyhd8ed1ab_0
+networkx=3.4.1=pypi_0
+nltk=3.9.1=py312haa95532_0
+numexpr=2.8.7=py312h96b7d27_0
+numpy=1.26.4=py312hfd52020_0
+numpy-base=1.26.4=py312h4dde369_0
+pandas=2.2.1=py312h0158946_0
+pickleshare=0.7.5=py_1003
+pip=24.0=py312haa95532_0
+pipreqs=0.4.13=pyhd8ed1ab_0
+python=3.12.3=h2628c8c_0_cpython
+python-dateutil=2.9.0post0=py312haa95532_2
+python-tzdata=2023.3=pyhd3eb1b0_0
+python_abi=3.12=4_cp312
+pytrends=4.9.0=pyhd8ed1ab_0
+pytz=2024.1=py312haa95532_0
+pywin32=306=py312h53d5487_2
+pyzmq=26.0.3=py312hd7027bb_0
+requests=2.32.2=pyhd8ed1ab_0
+rpds-py=0.10.6=py312h062c2fa_0
+scikit-learn=1.5.0=pypi_0
+scipy=1.13.1=py312hbb039d4_0
+seaborn=0.13.2=pypi_0
+setuptools=69.5.1=py312haa95532_0
+tqdm=4.66.5=py312hfc267ef_0
+urllib3=1.26.19=py312haa95532_0
