@@ -1,32 +1,42 @@
-
-
-# import nltk
-# from nltk.corpus import wordnet as wn
-# from pytrends.request import TrendReq
-# nltk.download('wordnet')
 import gensim.downloader
+import os
+from gensim.models import KeyedVectors
 from gensim.similarities.fastss import FastSS
 
 
-def get_similar_words(search_word):
+def get_similar_words(search_word, n_words=5):
     """
-    takes in a word and returns fifty related words based on their cosine similarity. words that are 
+    takes in a word and returns n related words based on their cosine similarity. words that are 
     too similar are identified using the levenshtein edit distance and removed.
     
-    parameters:
-        > word (text): search term
+    args:
+        > word (txt): search term
+        > n_words (int): number of related words to return
 
     returns:
         > related_words (dict): a dictionary in the format {search_word: related_words} 
     """
     
+    model_path = '../Mainline/models/wiki_word_embeddings'
 
-    # download the embeddings
-    vectors = gensim.downloader.load('fasttext-wiki-news-subwords-300')
+    # retrive word embeddings model
+    if os.path.exists(model_path):
+        # load the model from local file
+        print("Loading saved model...")
+        model = KeyedVectors.load(model_path)
 
-    # retrieve the 100 most similar words 
-    words_vects = vectors.most_similar(search_word, topn=100)
+    else:
+        # download and save the model if not available
+        print("Downloading model...")
+        model = gensim.downloader.load('fasttext-wiki-news-subwords-300')
+        model.save(model_path)
+
+    # retrieve the most similar words 
+    words_vects = model.most_similar(search_word, topn=n_words*5)
     
+    # convert all words to lowercase
+    words_vects = [(word[0].lower(), word[1]) for word in words_vects]
+
     # extract the words
     words = [row[0] for row in words_vects]
 
@@ -40,7 +50,7 @@ def get_similar_words(search_word):
     words = [row[0] for row in words_vects if row[0] not in matching_words]
 
     # trim related words to top 50
-    related_words = {search_word: words[:5]}
+    related_words = {search_word: words[:n_words]}
 
     return related_words
 
