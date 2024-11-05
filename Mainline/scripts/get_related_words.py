@@ -33,6 +33,9 @@ def get_similar_words(search_word, n_words=5):
 
     # retrieve the 100 most similar words 
     words_vects = model.most_similar(search_word, topn=n_words*5)
+
+    # convert all words to lowercase
+    words_vects = [(word[0].lower(), word[1]) for word in words_vects]
     
     # extract the words
     words = [row[0] for row in words_vects]
