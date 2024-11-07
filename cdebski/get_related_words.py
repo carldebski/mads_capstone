@@ -31,14 +31,18 @@ def get_similar_words(search_word, n_words=5):
         model = gensim.downloader.load('fasttext-wiki-news-subwords-300')
         model.save(model_path)
 
-    # retrieve the most similar words 
-    words_vects = model.most_similar(search_word, topn=n_words*5)
-    
+    # safe retrival of the most similar words. Will return itself if the word is not in its vocabulary
+    try:
+        word_vects = model.most_similar(search_word, topn=n_words*5)
+
+    except KeyError:
+        word_vects = [(search_word, 1)]
+
     # convert all words to lowercase
-    words_vects = [(word[0].lower(), word[1]) for word in words_vects]
+    word_vects = [(word[0].lower(), word[1]) for word in word_vects]
 
     # extract the words
-    words = [row[0] for row in words_vects]
+    words = [row[0] for row in word_vects]
 
     # load similar words into fuzzy search query (levenshtein edit distance) 
     fastss = FastSS(words)
@@ -47,7 +51,7 @@ def get_similar_words(search_word, n_words=5):
     matching_words = fastss.query(search_word, max_dist=1)[1]
 
     # filter out words that match too closely
-    words = [row[0] for row in words_vects if row[0] not in matching_words]
+    words = [row[0] for row in word_vects if row[0] not in matching_words]
 
     # trim related words to top 50
     related_words = {search_word: words[:n_words]}
