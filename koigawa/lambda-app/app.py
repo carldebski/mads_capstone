@@ -12,6 +12,9 @@ from datetime import date, timedelta
 import pickle
 import tensorflow
 from tensorflow.keras.models import load_model
+import shutil
+
+s3 = boto3.client('s3')
 
 def handler(event, context):
 
@@ -147,8 +150,19 @@ def get_single_keyword_trend_data_gtab(keyword, region='US', start_date='2022-01
     Returns:
         pd.DataFrame: Google Trends data for the keyword with Date and Max Ratio (Interest) columns.
     """
-    # Initialize GTAB object
-    t = gtab.GTAB()
+
+    source_dir = '/var/lang/lib/python3.12/site-packages/gtab'
+    destination_dir = '/tmp/gtab'
+
+    # Create the destination directory if it doesn't already exist
+    os.makedirs(destination_dir, exist_ok=True)
+
+    print('The original path should be:',os.path.dirname(gtab.__file__))
+
+    # Copy all content from source_dir to destination_dir
+    shutil.copytree(source_dir, destination_dir, dirs_exist_ok=True)
+
+    t = gtab.GTAB(destination_dir)
 
     try:
         # Ensure keyword is a non-empty string
@@ -246,8 +260,8 @@ def generate_predictions():
     # Import the output of DataExtractionGTAB.py
     data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
     # Import model
-    bucket_name = 's3://mads-siads699-capstone-cloud9'
-    model_key = 'data/rnn_model_limited_data_v1.pkl'
+    bucket_name = 'mads-siads699-capstone-cloud9'
+    model_key = 'model/rnn_model_limited_data_v1.pkl'
     model_path = '/tmp/rnn_model_limited_data_v1.pkl'
     s3.download_file(bucket_name, model_key, model_path)
 
