@@ -4,6 +4,7 @@ import altair as alt
 from altair import datum
 import numpy as np
 import boto3
+import os
 
 def handler(event, context):
     
@@ -36,8 +37,8 @@ def handler(event, context):
 
         sagemaker_runtime = boto3.client('sagemaker-runtime')
 
-        endpoint_name = 'web-sagemaker-nlp-1730723348977-Endpoint-20241104-122913'
-        inference_component_name = 'web-sagemaker-nlp-1730723348977-20241104-1229130'
+        endpoint_name = os.getenv('SM_ENDPOINT_NAME')
+        inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
 
         response = sagemaker_runtime.invoke_endpoint(
                 EndpointName = endpoint_name,
@@ -46,7 +47,9 @@ def handler(event, context):
                 InferenceComponentName = inference_component_name
                 )
 
-        response_list = response.split(";")
+        print(response)
+
+        response_list = response["Body"].read().decode('utf-8').split(";")
         
         df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/car_details.csv")
         df = df[['Make','Fuel Tank Capacity','Price','Year','Seating Capacity',"Model"]]
