@@ -5,9 +5,16 @@ from altair import datum
 import numpy as np
 import boto3
 import os
+import gtab
+import urllib3
+import requests
+from datetime import date, timedelta
+import pickle
+import tensorflow
+from tensorflow.keras.models import load_model
 
 def handler(event, context):
-    
+
     # Eventually change this to only run at POST call
     print(event)
     user_value = 'temp_val'
@@ -15,42 +22,53 @@ def handler(event, context):
     response_list = 'temp_val'
     chart_spec = None
     if event['httpMethod'] == 'POST':
-        user_value = json.loads(event['body'])["userInput"]
+        key_word = json.loads(event['body'])["keyWord"]
+        start_date = json.loads(event['body'])["startDate"]
         print("User value retrieved!")
-        print(user_value)
+        print(key_word)
+        print(start_date)
 
+        s3 = boto3.client('s3')
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('QueryTerms')
-        item_key = {'input': user_value}
 
+        item_key = {'input': key_word}
         response = table.get_item(Key=item_key)
 
-        try:
-            output = response['Item']['status']
-        except:
-            item = {
-                'input': user_value,
-                'status': 'Cached'
-                    }
-            table.put_item(Item=item)
-            output = 'New'
 
-        sagemaker_runtime = boto3.client('sagemaker-runtime')
 
-        endpoint_name = os.getenv('SM_ENDPOINT_NAME')
-        inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
+        # try:
+        #     output = response['Item']['related_words']
+        # except:
+        #     sagemaker_runtime = boto3.client('sagemaker-runtime')
 
-        response = sagemaker_runtime.invoke_endpoint(
-                EndpointName = endpoint_name,
-                ContentType = "text/plain",
-                Body = user_value,
-                InferenceComponentName = inference_component_name
-                )
+        #     endpoint_name = os.getenv('SM_ENDPOINT_NAME')
+        #     inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
 
-        print(response)
+        #     response = sagemaker_runtime.invoke_endpoint(
+        #             EndpointName = endpoint_name,
+        #             ContentType = "text/plain",
+        #             Body = key_word,
+        #             InferenceComponentName = inference_component_name
+        #             )
 
-        response_list = response["Body"].read().decode('utf-8').split(";")
-        
+        #     print(response)
+        #     response_list = (", ").join(response["Body"].read().decode('utf-8').split(";"))
+
+        #     item = {
+        #         'input': key_word,
+        #         'status': 'New',
+        #         'related_words': response_list
+        #             }
+
+        #     table.put_item(Item=item)
+        #     output = response_list
+
+        output = "computer, phone, tablet"
+
+        create_forecast_data(output,start_date)
+        generate_predictions()
+
         df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/car_details.csv")
         df = df[['Make','Fuel Tank Capacity','Price','Year','Seating Capacity',"Model"]]
 
@@ -102,7 +120,7 @@ def handler(event, context):
             ContentType='application/json'
         )
 
-    
+
     return {
         'statusCode': 200,
         "headers": {
@@ -112,7 +130,168 @@ def handler(event, context):
             "Access-Control-Allow-Headers": "*"
         },
         "body": json.dumps({'cache_status':output,'relevant_terms':response_list})
-        # "body": json.dumps({"message": user_value}) 
-        # 'body': json.dumps('Hello from Lambda!')
     }
 
+def get_single_keyword_trend_data_gtab(keyword, region='US', start_date='2022-01-01'):
+
+    day_ago = date.today() - timedelta(days=1)
+    time_period = start_date + " " + day_ago.strftime("%Y-%m-%d")
+    """
+    Query Google Trends data using GTAB for a single keyword, region, and time period.
+
+    Args:
+        keyword (str): The keyword to search.
+        region (str): Region code (default is 'US').
+        time_period (str): Timeframe for the data (default is '2020-01-01 2024-10-11').
+
+    Returns:
+        pd.DataFrame: Google Trends data for the keyword with Date and Max Ratio (Interest) columns.
+    """
+    # Initialize GTAB object
+    t = gtab.GTAB()
+
+    try:
+        # Ensure keyword is a non-empty string
+        if not keyword or not isinstance(keyword, str):
+            raise ValueError("Invalid keyword provided.")
+
+        print("Querying keyword: %s in region: %s for the period %s" % (keyword, region, time_period))
+
+
+        # Query Google Trends using GTAB
+        t.set_options(pytrends_config={"timeframe": time_period, 'geo': region})
+        trend_data = t.new_query(keyword)
+
+      # Check if data is empty
+        if trend_data.empty:
+            print("No data found for keyword: %s" % keyword)
+            return None
+
+        # Rename 'max_ratio' to the keyword
+        trend_data = trend_data[['max_ratio']].rename(columns={'max_ratio': keyword})
+
+        # Reset the index to move 'date' from the index to a column
+        trend_data = trend_data.reset_index()
+
+        return trend_data
+
+    except Exception as e:
+        print("An error occurred: %s" % e)
+        return None
+
+def create_forecast_data(keywords,start_date,region="US"):
+
+    # Process the keywords and region
+    keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]  # Clean whitespace and ensure each is a string
+    region = region.strip()
+
+    # Initialize an empty DataFrame to hold combined results
+    combined_trend_data = pd.DataFrame()
+
+    # Loop through each keyword and merge the results
+    for keyword in keywords:
+        trend_data = get_single_keyword_trend_data_gtab(keyword, region, start_date)
+
+        if trend_data is not None:
+            if combined_trend_data.empty:
+                combined_trend_data = trend_data
+            else:
+                # Merge the current keyword's data into the combined DataFrame on 'date'
+                combined_trend_data = pd.merge(combined_trend_data, trend_data, on='date', how='outer')
+
+    combined_trend_data.to_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv', index=False)
+
+def predict_future(model, keyword_data, time_step, num_predictions):
+    # Get the last known data for the keyword
+    last_sequence = keyword_data[-time_step:]  # The last time-step sequence from the data
+    predictions = []
+
+    for _ in range(num_predictions):
+        # Reshape to match the input shape for the RNN
+        predicted = model.predict(last_sequence.reshape(1, time_step, 1))
+        predictions.append(predicted[0, 0])  # Get the predicted value
+
+        # Update the sequence with the predicted data for the next step
+        last_sequence = np.append(last_sequence[1:], predicted)  # Update the last sequence
+
+    return predictions
+
+
+# Function to generate future dates based on the last date in the dataframe
+def generate_future_dates(last_date, num_predictions, interval_days=7):
+    return pd.date_range(start=last_date + pd.Timedelta(days=interval_days), periods=num_predictions, freq=f'{interval_days}D')
+
+def predict_future(model, keyword_data, time_step, num_predictions):
+    # Get the last known data for the keyword
+    last_sequence = keyword_data[-time_step:]  # The last time-step sequence from the data
+    predictions = []
+
+    for _ in range(num_predictions):
+        # Reshape to match the input shape for the RNN
+        predicted = model.predict(last_sequence.reshape(1, time_step, 1))
+        predictions.append(predicted[0, 0])  # Get the predicted value
+
+        # Update the sequence with the predicted data for the next step
+        last_sequence = np.append(last_sequence[1:], predicted)  # Update the last sequence
+
+    return predictions
+
+
+# Function to generate future dates based on the last date in the dataframe
+def generate_future_dates(last_date, num_predictions, interval_days=7):
+    return pd.date_range(start=last_date + pd.Timedelta(days=interval_days), periods=num_predictions, freq=f'{interval_days}D')
+
+
+def generate_predictions():
+    # Import the output of DataExtractionGTAB.py
+    data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
+    # Import model
+    bucket_name = 's3://mads-siads699-capstone-cloud9'
+    model_key = 'data/rnn_model_limited_data_v1.pkl'
+    model_path = '/tmp/rnn_model_limited_data_v1.pkl'
+    s3.download_file(bucket_name, model_key, model_path)
+
+    with open(model_path, 'rb') as file:
+        model = pickle.load(file)
+
+    # variables
+    num_predictions = 10
+    time_step = 10 # Define time step (number of previous observations) considered - this needs to match model trainings
+
+    # Extend df to have 10 future dates 
+    data['date'] = pd.to_datetime(data['date'])
+
+    # Generate new dates with a 7-day interval, starting from the last date in df
+    last_date = data['date'].iloc[-1]
+    new_dates = generate_future_dates(last_date, num_predictions)
+
+    predicted_dfs = [] # establish a list to store seperate df's per keyword
+
+    # Run predictions on each keyword
+    for keyword in data.columns[1:]: # loop through each unique keyword
+
+        keyword_column_index = data.columns.get_loc(keyword)  # Get the column index for the keyword
+        keyword_data = data[keyword].values  # Extract the data for the keyword
+        future_predictions = predict_future(model, keyword_data, time_step, num_predictions=10)
+
+        # add dataframe with future predictions for keyword to list 
+        predicted_dfs.append( pd.DataFrame({'date': new_dates, keyword: future_predictions}))
+
+    # Merge DataFrames on the 'date' column
+    merged_predictions_df = pd.concat(predicted_dfs, axis=1)
+
+    # Remove duplicate 'date' columns (optional, as they will have the same values)
+    merged_predictions_df = merged_predictions_df.loc[:, ~merged_predictions_df.columns.duplicated()]
+
+    # Reset index to have a clean DataFrame
+    merged_predictions_df.reset_index(drop=True, inplace=True)
+
+    # Define the file path where the CSV will be saved (within the same directory)
+
+    combined_trend_data_df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv")
+    combined_trend_data_df["is_prediction"] = "N"
+    merged_predictions_df["is_prediction"] = "Y"
+
+    combined_df = pd.concat([combined_trend_data_df,merged_predictions_df])
+
+    combined_df.to_csv('s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv')
