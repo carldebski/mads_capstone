@@ -23,6 +23,7 @@ def handler(event, context):
     output = 'temp_val'
     status = 'temp_val'
     chart_spec = None
+
     if event['httpMethod'] == 'POST':
         key_word = json.loads(event['body'])["keyWord"]
         start_date = json.loads(event['body'])["startDate"]
@@ -37,38 +38,34 @@ def handler(event, context):
         item_key = {'input': key_word}
         response = table.get_item(Key=item_key)
 
+        try:
+            output = response['Item']['related_words']
+            status = response['Item']['status']
+        except:
+            sagemaker_runtime = boto3.client('sagemaker-runtime')
 
+            endpoint_name = os.getenv('SM_ENDPOINT_NAME')
+            inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
 
-        # try:
-        #     output = response['Item']['related_words']
-        #     status = response['Item']['status']
-        # except:
-        #     sagemaker_runtime = boto3.client('sagemaker-runtime')
+            response = sagemaker_runtime.invoke_endpoint(
+                    EndpointName = endpoint_name,
+                    ContentType = "text/plain",
+                    Body = key_word,
+                    InferenceComponentName = inference_component_name
+                    )
 
-        #     endpoint_name = os.getenv('SM_ENDPOINT_NAME')
-        #     inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
+            print(response)
+            response_list = (", ").join(response["Body"].read().decode('utf-8').split(";"))
 
-        #     response = sagemaker_runtime.invoke_endpoint(
-        #             EndpointName = endpoint_name,
-        #             ContentType = "text/plain",
-        #             Body = key_word,
-        #             InferenceComponentName = inference_component_name
-        #             )
+            item = {
+                'input': key_word,
+                'status': 'New',
+                'related_words': response_list
+                    }
 
-        #     print(response)
-        #     response_list = (", ").join(response["Body"].read().decode('utf-8').split(";"))
-
-        #     item = {
-        #         'input': key_word,
-        #         'status': 'New',
-        #         'related_words': response_list
-        #             }
-
-        #     table.put_item(Item=item)
-        #     status = 'New'
-        #     output = response_list
-
-        output = "computer, phone, tablet"
+            table.put_item(Item=item)
+            status = 'New'
+            output = response_list
 
         create_forecast_data(output,start_date)
         generate_predictions()
