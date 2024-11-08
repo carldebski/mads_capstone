@@ -20,9 +20,8 @@ def handler(event, context):
 
     # Eventually change this to only run at POST call
     print(event)
-    user_value = 'temp_val'
     output = 'temp_val'
-    response_list = 'temp_val'
+    status = 'temp_val'
     chart_spec = None
     if event['httpMethod'] == 'POST':
         key_word = json.loads(event['body'])["keyWord"]
@@ -42,6 +41,7 @@ def handler(event, context):
 
         # try:
         #     output = response['Item']['related_words']
+        #     status = response['Item']['status']
         # except:
         #     sagemaker_runtime = boto3.client('sagemaker-runtime')
 
@@ -65,6 +65,7 @@ def handler(event, context):
         #             }
 
         #     table.put_item(Item=item)
+        #     status = 'New'
         #     output = response_list
 
         output = "computer, phone, tablet"
@@ -92,7 +93,7 @@ def handler(event, context):
             order=alt.Order('sum(value):Q', sort='descending'),
             tooltip='variable:N'
         ).properties(
-            width=500,
+            width=470,
             height=180,
             title="GTAB Value % of Total for Returned Key Words"
         ).transform_filter(
@@ -112,7 +113,7 @@ def handler(event, context):
                 titleAnchor='middle')),
             tooltip='is_prediction:N'
         ).properties(
-            width=500,
+            width=470,
             height=180,
             title="Forecasted GTAB Value for Selected Key Word"
         ).transform_filter(
@@ -122,8 +123,8 @@ def handler(event, context):
         chart_json = alt.vconcat(chart, chart_two).configure_axis(
             grid=False
             ).configure_axis(
-                labelFontSize=16,
-                titleFontSize=16
+                labelFontSize=15,
+                titleFontSize=15
             ).configure_title(fontSize=20).resolve_scale(shape='independent', color='independent').to_json()
 
         s3 = boto3.client('s3')
@@ -147,7 +148,7 @@ def handler(event, context):
             "Access-Control-Allow-Methods": "POST,OPTIONS",
             "Access-Control-Allow-Headers": "*"
         },
-        "body": json.dumps({'cache_status':output,'relevant_terms':response_list})
+        "body": json.dumps({'cache_status':status,'relevant_terms':output})
     }
 
 def get_single_keyword_trend_data_gtab(keyword, region='US', start_date='2022-01-01'):
