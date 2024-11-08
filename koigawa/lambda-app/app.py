@@ -72,45 +72,60 @@ def handler(event, context):
         create_forecast_data(output,start_date)
         generate_predictions()
 
-        df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/car_details.csv")
-        df = df[['Make','Fuel Tank Capacity','Price','Year','Seating Capacity',"Model"]]
+        df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv")
+        df.drop(columns=df.columns[0], axis=1, inplace=True)
 
-        user_value = 'BMW'
-        selection = alt.selection_point(fields=['Year'])
-        chart = alt.Chart(df).mark_circle().encode(
-            x='Price:Q',
-            y='Fuel Tank Capacity:Q',
-            color=alt.Color('Model:N',legend=None),
-            tooltip='Fuel Tank Capacity:N'
-                ).properties(
-                   width=500,
-                   height=180
-                ).properties(
-                    title='Fuel Tank Capacity vs Price for '+ user_value
-                ).add_params(
-                    selection
-                ).transform_filter(
-                    (datum.Make == user_value)
-                ).interactive()
+        cols = [ col for col in df.columns if col not in ['date','is_prediction']]
+        df = pd.melt(df,id_vars=["date","is_prediction"], value_vars=cols)
+        selection = alt.selection_point(fields=['variable'],value=cols[0])
 
-        chart_two = alt.Chart(df).mark_bar().encode(
-            x='Model:O',
-            y='count(Year):Q',
-            color=alt.Color('Model:N'),
-            ).properties(
-                width=500,
-                height=180
-            ).properties(
-                title='Model Count for ' + user_value
-            ).transform_filter(
-                (datum.Make == user_value)
-            ).transform_filter(
-                selection
-                )
+        chart = alt.Chart(df).mark_area().encode(
+            x=alt.X('date:T', axis=alt.Axis(format="%Y-%b",labelAngle=-90),title=None),
+            y=alt.Y("value:Q",
+                    title="% of Total",
+                                ).stack("normalize"),
+            color=alt.condition(selection, 'variable:N', alt.value('lightgray'),title="Key Words",legend=alt.Legend(
+                orient='none',
+                legendX=170, legendY=-40,
+                direction='horizontal',
+                titleAnchor='middle')),
+            order=alt.Order('sum(value):Q', sort='descending'),
+            tooltip='variable:N'
+        ).properties(
+            width=500,
+            height=180,
+            title="GTAB Value % of Total for Returned Key Words"
+        ).transform_filter(
+            (datum.is_prediction == "N")
+        ).add_params(
+            selection
+        )
+
+
+        chart_two = alt.Chart(df).mark_line().encode(
+            x=alt.X('date:T', axis=alt.Axis(format="%Y-%b",labelAngle=-90),title=None),
+            y=alt.Y("value:Q", title="Gtab Value"),
+            color=alt.Color('is_prediction:N',title="Is Forecast",legend=alt.Legend(
+                orient='none',
+                legendX=220, legendY=-40,
+                direction='horizontal',
+                titleAnchor='middle')),
+            tooltip='is_prediction:N'
+        ).properties(
+            width=500,
+            height=180,
+            title="Forecasted GTAB Value for Selected Key Word"
+        ).transform_filter(
+            selection
+        )
 
         chart_json = alt.vconcat(chart, chart_two).configure_axis(
             grid=False
-            ).to_json()
+            ).configure_axis(
+                labelFontSize=16,
+                titleFontSize=16
+            ).configure_title(fontSize=20).resolve_scale(shape='independent', color='independent').to_json()
+
         s3 = boto3.client('s3')
 
         bucket_name = "mads-siads699-capstone-cloud9"
