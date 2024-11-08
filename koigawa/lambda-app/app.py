@@ -55,11 +55,11 @@ def handler(event, context):
                     )
 
             print(response)
-            response_list = (", ").join(response["Body"].read().decode('utf-8').split(";"))
+            response_list = (", ").join(response["Body"].read().decode('utf-8').split(";")[:3])
 
             item = {
                 'input': key_word,
-                'status': 'New',
+                'status': 'Cached',
                 'related_words': response_list
                     }
 
@@ -82,7 +82,7 @@ def handler(event, context):
             y=alt.Y("value:Q",
                     title="% of Total",
                                 ).stack("normalize"),
-            color=alt.condition(selection, 'variable:N', alt.value('lightgray'),title="Key Words",legend=alt.Legend(
+            color=alt.condition(selection, 'variable:N', alt.value('lightgray'),title="Related terms",legend=alt.Legend(
                 orient='none',
                 legendX=170, legendY=-40,
                 direction='horizontal',
@@ -92,7 +92,7 @@ def handler(event, context):
         ).properties(
             width=470,
             height=180,
-            title="GTAB Value % of Total for Returned Key Words"
+            title="GTAB value % of total for returned related terms"
         ).transform_filter(
             (datum.is_prediction == "N")
         ).add_params(
@@ -112,7 +112,7 @@ def handler(event, context):
         ).properties(
             width=470,
             height=180,
-            title="Forecasted GTAB Value for Selected Key Word"
+            title="Forecasted GTAB value for selected related term"
         ).transform_filter(
             selection
         )
@@ -120,9 +120,9 @@ def handler(event, context):
         chart_json = alt.vconcat(chart, chart_two).configure_axis(
             grid=False
             ).configure_axis(
-                labelFontSize=15,
-                titleFontSize=15
-            ).configure_title(fontSize=20).resolve_scale(shape='independent', color='independent').to_json()
+                labelFontSize=14,
+                titleFontSize=14
+            ).configure_title(fontSize=18).resolve_scale(shape='independent', color='independent').to_json()
 
         s3 = boto3.client('s3')
 
