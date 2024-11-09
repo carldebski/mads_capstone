@@ -39,7 +39,7 @@ def handler(event, context):
         response = table.get_item(Key=item_key)
 
         try:
-            output = response['Item']['related_words']
+            output = key_word + ", " + response['Item']['related_words']
             status = response['Item']['status']
         except:
             sagemaker_runtime = boto3.client('sagemaker-runtime')
@@ -65,7 +65,7 @@ def handler(event, context):
 
             table.put_item(Item=item)
             status = 'New'
-            output = response_list
+            output = key_word + ", " + response_list
 
         create_forecast_data(output,start_date)
         generate_predictions()
