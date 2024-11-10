@@ -19,6 +19,9 @@ def get_similar_words(search_word, n_words=5):
     
     model_path = '../models/wiki_word_embeddings'
 
+   # remove spaces from phrases
+    search_word = search_word.replace(" ","").lower()
+
     # retrive word embeddings model
     if os.path.exists(model_path):
         # load the model from local file
@@ -47,8 +50,8 @@ def get_similar_words(search_word, n_words=5):
     # load similar words into fuzzy search query (levenshtein edit distance) 
     fastss = FastSS(words)
 
-    # retrieve similar words with a max edit distance of 1
-    matching_words = fastss.query(search_word, max_dist=1)[1]
+    # retrieve similar words with a max edit distance of 2
+    matching_words = fastss.query(search_word, max_dist=2)[1]
 
     # filter out words that match too closely
     words = [row[0] for row in word_vects if row[0] not in matching_words]

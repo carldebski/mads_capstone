@@ -15,9 +15,28 @@ def get_similar_words(search_word, n_words=5):
 
     returns:
         > related_words (dict): a dictionary in the format {search_word: related_words} 
+
+    Other models:
+    gensim pre-trained model descriptions: https://github.com/piskvorky/gensim-data 
+        > fasttext-wiki-news-subwords-300
+        > conceptnet-numberbatch-17-06-300 
+        > word2vec-ruscorpora-300
+        > word2vec-google-news-300
+        > glove-wiki-gigaword-50
+        > glove-wiki-gigaword-100
+        > glove-wiki-gigaword-200
+        > glove-wiki-gigaword-300
+        > glove-twitter-25
+        > glove-twitter-50
+        > glove-twitter-100
+        > glove-twitter-200
+        > __testing_word2vec-matrix-synopsis
     """
     
     model_path = '../Mainline/models/wiki_word_embeddings'
+
+    # remove spaces from phrases
+    search_word = search_word.replace(" ","").lower()
 
     # retrive word embeddings model
     if os.path.exists(model_path):
@@ -47,8 +66,8 @@ def get_similar_words(search_word, n_words=5):
     # load similar words into fuzzy search query (levenshtein edit distance) 
     fastss = FastSS(words)
 
-    # retrieve similar words with a max edit distance of 1
-    matching_words = fastss.query(search_word, max_dist=1)[1]
+    # retrieve similar words with a max edit distance of 2
+    matching_words = fastss.query(search_word, max_dist=2)[1]
 
     # filter out words that match too closely
     words = [row[0] for row in word_vects if row[0] not in matching_words]
