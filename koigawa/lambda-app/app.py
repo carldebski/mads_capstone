@@ -75,18 +75,21 @@ def handler(event, context):
 
         cols = [ col for col in df.columns if col not in ['date','is_prediction']]
         df = pd.melt(df,id_vars=["date","is_prediction"], value_vars=cols)
+        
         selection = alt.selection_point(fields=['variable'],value=cols[0])
+        opacity = alt.condition(selection, alt.value(1.0), alt.value(0.5))
 
         chart = alt.Chart(df).mark_area().encode(
             x=alt.X('date:T', axis=alt.Axis(format="%Y-%b",labelAngle=-90),title=None),
             y=alt.Y("value:Q",
                     title="% of Total",
                                 ).stack("normalize"),
-            color=alt.condition(selection, 'variable:N', alt.value('lightgray'),title="Related terms",legend=alt.Legend(
+            color=alt.Color('variable:N',title="Related terms",legend=alt.Legend(
                 orient='none',
                 legendX=170, legendY=-40,
                 direction='horizontal',
                 titleAnchor='middle')),
+            opacity=opacity,
             order=alt.Order('sum(value):Q', sort='descending'),
             tooltip='variable:N'
         ).properties(
@@ -117,12 +120,13 @@ def handler(event, context):
             selection
         )
 
-        chart_json = alt.vconcat(chart, chart_two).configure_axis(
-            grid=False
-            ).configure_axis(
-                labelFontSize=14,
-                titleFontSize=14
-            ).configure_title(fontSize=18).resolve_scale(shape='independent', color='independent').to_json()
+        with alt.themes.enable('fivethirtyeight'):
+            chart_json = alt.vconcat(chart, chart_two).configure_axis(
+                grid=False
+                ).configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=14
+                ).configure_title(fontSize=18).resolve_scale(shape='independent', color='independent').to_json()
 
         s3 = boto3.client('s3')
 
