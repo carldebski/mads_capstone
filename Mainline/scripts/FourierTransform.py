@@ -65,3 +65,23 @@ if __name__ == "__main__":
 
     # Show the plot
     plt.show()
+
+
+
+    
+
+    # Check if the frequency is non-zero
+    if dominant_freq > 0:
+        # Calculate the period in weeks (1/frequency)
+        period_in_weeks = 1 / dominant_freq
+
+        # Convert weeks to months (approximately 4.345 weeks per month)
+        period_in_months = period_in_weeks / 4.345
+
+        # Print human-readable cycle description
+        if period_in_weeks < 4:
+            print(f"The dominant cycle occurs every {period_in_weeks:.2f} weeks.")
+        else:
+            print(f"The dominant cycle occurs every {period_in_months:.2f} months.")
+    else:
+        print("The frequency is zero or invalid; no cycle can be determined.")
