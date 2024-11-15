@@ -26,10 +26,8 @@ def handler(event, context):
 
     if event['httpMethod'] == 'POST':
         key_word = json.loads(event['body'])["keyWord"]
-        start_date = json.loads(event['body'])["startDate"]
         print("User value retrieved!")
         print(key_word)
-        print(start_date)
 
         s3 = boto3.client('s3')
         dynamodb = boto3.resource('dynamodb')
@@ -67,7 +65,7 @@ def handler(event, context):
             status = 'New'
             output = key_word + ", " + response_list
 
-        create_forecast_data(output,start_date)
+        create_forecast_data(output)
         generate_predictions()
 
         df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv")
@@ -75,7 +73,7 @@ def handler(event, context):
 
         cols = [ col for col in df.columns if col not in ['date','is_prediction']]
         df = pd.melt(df,id_vars=["date","is_prediction"], value_vars=cols)
-        
+
         selection = alt.selection_point(fields=['variable'],value=cols[0])
         opacity = alt.condition(selection, alt.value(1.0), alt.value(0.5))
 
@@ -95,7 +93,7 @@ def handler(event, context):
         ).properties(
             width=470,
             height=180,
-            title="GTAB value % of total for returned related terms"
+            title="Relative Popularity of Searched and Returned Terms"
         ).transform_filter(
             (datum.is_prediction == "N")
         ).add_params(
@@ -115,7 +113,7 @@ def handler(event, context):
         ).properties(
             width=470,
             height=180,
-            title="Forecasted GTAB value for selected related term"
+            title="Forecasted Popularity of Selected Term"
         ).transform_filter(
             selection
         )
@@ -152,10 +150,11 @@ def handler(event, context):
         "body": json.dumps({'cache_status':status,'relevant_terms':output})
     }
 
-def get_single_keyword_trend_data_gtab(keyword, region='US', start_date='2022-01-01'):
+def get_single_keyword_trend_data_gtab(keyword, region='US'):
 
     day_ago = date.today() - timedelta(days=1)
-    time_period = start_date + " " + day_ago.strftime("%Y-%m-%d")
+    year_ago = date.today() - timedelta(days=366)
+    time_period = year_ago.strftime("%Y-%m-%d") + " " + day_ago.strftime("%Y-%m-%d")
     """
     Query Google Trends data using GTAB for a single keyword, region, and time period.
 
@@ -210,7 +209,7 @@ def get_single_keyword_trend_data_gtab(keyword, region='US', start_date='2022-01
         print("An error occurred: %s" % e)
         return None
 
-def create_forecast_data(keywords,start_date,region="US"):
+def create_forecast_data(keywords,region="US"):
 
     # Process the keywords and region
     keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]  # Clean whitespace and ensure each is a string
@@ -221,7 +220,7 @@ def create_forecast_data(keywords,start_date,region="US"):
 
     # Loop through each keyword and merge the results
     for keyword in keywords:
-        trend_data = get_single_keyword_trend_data_gtab(keyword, region, start_date)
+        trend_data = get_single_keyword_trend_data_gtab(keyword, region)
 
         if trend_data is not None:
             if combined_trend_data.empty:
