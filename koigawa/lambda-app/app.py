@@ -13,6 +13,7 @@ import pickle
 import tensorflow
 from tensorflow.keras.models import load_model
 import shutil
+from scipy.fftpack import fft, rfft
 
 s3 = boto3.client('s3')
 
@@ -67,6 +68,7 @@ def handler(event, context):
 
         create_forecast_data(output)
         generate_predictions()
+        generate_seasonal()
 
         df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv")
         df.drop(columns=df.columns[0], axis=1, inplace=True)
@@ -74,8 +76,12 @@ def handler(event, context):
         cols = [ col for col in df.columns if col not in ['date','is_prediction']]
         df = pd.melt(df,id_vars=["date","is_prediction"], value_vars=cols)
 
+        df_fourier = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/df_fourier.csv')
+        df_fourier_dom_cycle = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/df_fourier_dom_cycle.csv')
+
         selection = alt.selection_point(fields=['variable'],value=cols[0])
         opacity = alt.condition(selection, alt.value(1.0), alt.value(0.5))
+        opacity_text = alt.condition(selection, alt.value(1.0), alt.value(0))
 
         chart = alt.Chart(df).mark_area().encode(
             x=alt.X('date:T', axis=alt.Axis(format="%Y-%b",labelAngle=-90),title=None),
@@ -113,18 +119,43 @@ def handler(event, context):
         ).properties(
             width=470,
             height=180,
-            title="Forecasted Popularity of Selected Term"
+            title="Forecasted Popularity for the Selected Term"
         ).transform_filter(
             selection
         )
 
+        chart_three = alt.Chart(df_fourier).mark_line().encode(
+            x=alt.X('date:T', axis=alt.Axis(format="%Y-%b",labelAngle=-90),title=None),
+            y=alt.Y("value:Q", title="Amplitude"),
+            color=alt.Color('variable:N',title="Terms",legend=None)
+        ).properties(
+            width=500,
+            height=180,
+            title="Seasonality for Selected Term Identified by Fourier Transform"
+        ).transform_filter(
+            selection
+        )
+
+        chart_four = alt.Chart(df_fourier_dom_cycle).mark_text(align="left",
+            baseline="middle",size=20).encode(
+            text="text",
+            opacity=opacity_text,
+        )
+
         with alt.themes.enable('fivethirtyeight'):
-            chart_json = alt.vconcat(chart, chart_two).configure_axis(
+            chart_json = alt.vconcat(chart, chart_two,chart_three,chart_four).configure_axis(
                 grid=False
                 ).configure_axis(
                     labelFontSize=14,
                     titleFontSize=14
-                ).configure_title(fontSize=18).resolve_scale(shape='independent', color='independent').to_json()
+                ).configure_title(
+                    fontSize=18,
+                    orient='top',
+                    anchor='middle'
+                ).resolve_scale(
+                    shape='independent',
+                    color='independent'
+                ).to_json()
 
         s3 = boto3.client('s3')
 
@@ -277,18 +308,21 @@ def generate_predictions():
     data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
     # Import model
     bucket_name = 'mads-siads699-capstone-cloud9'
-    model_key = 'model/rnn_model_limited_data_v1.pkl'
-    model_path = '/tmp/rnn_model_limited_data_v1.pkl'
+    # model_key = 'model/rnn_model_limited_data_v1.pkl'
+    # model_path = '/tmp/rnn_model_limited_data_v1.pkl'
+    model_key = 'model/LSTM40Epochs.keras'
+    model_path = '/tmp/LSTM40Epochs.keras'
     s3.download_file(bucket_name, model_key, model_path)
 
     with open(model_path, 'rb') as file:
-        model = pickle.load(file)
+        model = load_model(file)
+        #model = pickle.load(file)
 
     # variables
     num_predictions = 10
     time_step = 10 # Define time step (number of previous observations) considered - this needs to match model trainings
 
-    # Extend df to have 10 future dates 
+    # Extend df to have 10 future dates
     data['date'] = pd.to_datetime(data['date'])
 
     # Generate new dates with a 7-day interval, starting from the last date in df
@@ -304,7 +338,7 @@ def generate_predictions():
         keyword_data = data[keyword].values  # Extract the data for the keyword
         future_predictions = predict_future(model, keyword_data, time_step, num_predictions=10)
 
-        # add dataframe with future predictions for keyword to list 
+        # add dataframe with future predictions for keyword to list
         predicted_dfs.append( pd.DataFrame({'date': new_dates, keyword: future_predictions}))
 
     # Merge DataFrames on the 'date' column
@@ -325,3 +359,75 @@ def generate_predictions():
     combined_df = pd.concat([combined_trend_data_df,merged_predictions_df])
 
     combined_df.to_csv('s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv')
+
+def generate_seasonal():
+    data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
+
+    df_fourier = pd.DataFrame()
+    df_fourier_dom_cycle = pd.DataFrame()
+
+    for word in data.columns[1:] :
+        # removing the mean from the data to minimize distortion in the lower frequencies 
+        X = (data[word] - data[word].mean()).values
+
+        dates = pd.to_datetime(data['date'])
+
+        # Compute the FFT
+        fft_result = np.fft.fft(X)
+        freqs = np.fft.fftfreq(len(fft_result), 1)
+
+        # Identify the positive frequencies and their magnitudes
+        positive_freqs = freqs[:len(freqs)//2]
+        positive_magnitude = np.abs(fft_result[:len(fft_result)//2])
+
+        # Find the index of the highest magnitude frequency
+        max_index = np.argmax(positive_magnitude)
+        dominant_freq = positive_freqs[max_index]
+
+        # Create a mask to isolate the frequency with the highest magnitude
+        mask = np.zeros_like(fft_result, dtype=complex)
+        mask[max_index] = fft_result[max_index]
+        mask[-max_index] = fft_result[-max_index]  # Include the symmetric part for real signals
+
+        # Perform IFFT to reconstruct the signal for the highest magnitude frequency
+        reconstructed_signal = np.fft.ifft(mask).real
+
+        temp_df = pd.DataFrame({word:reconstructed_signal})
+
+        df_fourier = pd.concat([df_fourier,temp_df], axis=1)
+
+        # # Check if the frequency is non-zero
+        if dominant_freq > 0:
+            # Calculate the period in weeks (1/frequency)
+            period_in_weeks = 1 / dominant_freq
+
+            # Convert weeks to months (approximately 4.345 weeks per month)
+            period_in_months = period_in_weeks / 4.345
+
+            # Print human-readable cycle description
+            if period_in_weeks < 4:
+                temp_df_dom_cycle = pd.DataFrame({"variable":[word],
+                                                  "value":[period_in_weeks],
+                                                  "period":["weeks"]})
+                df_fourier_dom_cycle = pd.concat([df_fourier_dom_cycle,temp_df_dom_cycle])
+
+            else:
+                temp_df_dom_cycle = pd.DataFrame({"variable":[word],
+                                                  "value":[period_in_months],
+                                                  "period":["months"]})
+                df_fourier_dom_cycle = pd.concat([df_fourier_dom_cycle,temp_df_dom_cycle])
+
+        else:
+            print("The frequency is zero or invalid; no cycle can be determined.")
+
+
+    # Additional processing for Altair
+
+    df_fourier["date"] = data["date"].values
+    cols = [ col for col in df_fourier.columns if col not in ['date']]
+    df_fourier = pd.melt(df_fourier,id_vars=["date"], value_vars=cols)
+    df_fourier_dom_cycle["text"] = df_fourier_dom_cycle.apply(lambda x: "The dominant cycle occurs every " + str(round(x["value"],2)) + " " + x["period"],axis=1)
+
+    # Save as dataframe for later access
+    df_fourier.to_csv('s3://mads-siads699-capstone-cloud9/data/df_fourier.csv')
+    df_fourier_dom_cycle.to_csv('s3://mads-siads699-capstone-cloud9/data/df_fourier_dom_cycle.csv')
