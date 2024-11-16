@@ -15,6 +15,7 @@ import gensim
 from gensim.models import KeyedVectors
 from gensim.similarities.fastss import FastSS
 import flask
+from nltk.corpus import wordnet as wn
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -53,21 +54,52 @@ class ScoringService(object):
                 one prediction per row in the dataframe"""
         model = cls.get_model()
         n_words = 5
+        input = input.replace(" ","").lower()
 
-        words_vects = model.most_similar(input, topn=n_words*5)
+        try:
+            word_cosine = model.most_similar(input, topn=n_words*5)
 
-        words = [row[0] for row in words_vects]
+        except KeyError:
+            word_cosine = [(input, 1)]
+
+        # convert all words to lowercase
+        word_cosine = [(word[0].lower(), word[1]) for word in word_cosine]
+
+        # extract the words
+        words = [row[0] for row in word_cosine]
 
         # load similar words into fuzzy search query (levenshtein edit distance) 
         fastss = FastSS(words)
 
-        # retrieve similar words with a max edit distance of 1
-        matching_words = fastss.query(input, max_dist=1)[1]
+        # create container for unique related words
+        unique_words = set()
 
-        # filter out words that match too closely
-        words = [row[0] for row in words_vects if row[0] not in matching_words]
 
-        related_words = (";").join(words[:n_words])
+        # for each word, check if it has similarities in the list
+        # if any of the similar words have already been identified, continue
+        for word in words:
+            similar_words = fastss.query(word, max_dist=2)[1]
+
+            if unique_words & set(similar_words):
+                continue
+            else:
+                unique_words.add(word)
+
+        # remove any of the same words
+        for word in list(fastss.query(input, max_dist=2)[1]):
+            try:
+                unique_words.remove(word)
+            except:
+                continue
+
+        unique_words = list(unique_words)
+
+        # refine list based on relevance using semantic similarity based on wordnet path distance
+        path_similarities = [get_wordnet_path_similarity(input, t) for t in unique_words]
+        ranked_path_similarities = sorted(list(zip(path_similarities, unique_words)), reverse=True)
+        ranked_words = [w[1] for w in ranked_path_similarities]
+
+        related_words = (";").join(ranked_words[:n_words])
 
         return related_words
 
@@ -100,3 +132,28 @@ def transformation():
     except Exception as e:
         logger.error(f"Invocations failed: {e}")
         return flask.Response(response=f"Failed with {data}", status=415, mimetype="text/plain")
+
+
+def get_hypernyms(term):
+    # this function will retrive the hypernyms
+
+    try:
+        synset = wn.synsets(term)[0]
+        hypernyms = synset.hypernyms()[0].lemma_names()[0]
+        return hypernyms
+
+    except IndexError:
+        pass
+
+
+def get_wordnet_path_similarity(search_term, term):
+    # this function will retrive the path symilarity of words using wordnet
+
+    try:
+        synset1 = wn.synsets(search_term)[0]
+        synset2 = wn.synsets(term)[0]
+        path_similarity = synset1.path_similarity(synset2)
+
+        return path_similarity
+    except IndexError:
+        return 0
