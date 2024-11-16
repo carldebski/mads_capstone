@@ -34,3 +34,8 @@ tzdata==2024.2
 urllib3==2.2.3
 wrapt==1.16.0
 yarl==1.15.5
+nltk==3.9.1
+click==8.1.7
+joblib==1.4.2
+regex==2024.11.6
+tqdm==4.67.0
