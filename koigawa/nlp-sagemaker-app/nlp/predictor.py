@@ -16,6 +16,11 @@ from gensim.models import KeyedVectors
 from gensim.similarities.fastss import FastSS
 import flask
 from nltk.corpus import wordnet as wn
+import nltk
+
+nltk_data_path = "/usr/share/nltk_data"
+os.environ['NLTK_DATA'] = nltk_data_path
+nltk.download('wordnet', download_dir=nltk_data_path)
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -35,6 +40,11 @@ model_path = os.path.join(prefix, "model")
 class ScoringService(object):
     model = None  # Where we keep the model when it's loaded
 
+    def __init__(self):
+        self.model = get_model()
+        nltk.download('wordnet', download_dir=nltk_data_path)
+        logger.info(f"Init method called to download nltk to {nltk_data_path}!!")
+
     @classmethod
     def get_model(cls):
         """Get the model object for this instance, loading it if it's not already loaded."""
@@ -52,6 +62,8 @@ class ScoringService(object):
         Args:
             input (a pandas dataframe): The data on which to do the predictions. There will be
                 one prediction per row in the dataframe"""
+        nltk.download('wordnet')
+
         model = cls.get_model()
         n_words = 5
         input = input.replace(" ","").lower()
