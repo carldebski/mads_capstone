@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nabla:EDPT,EHLT@170,15&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+  <style>
+    .nabla-title {
+      font-family: "Nabla", system-ui;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-size: 30px;
+      font-style: normal;
+      font-variation-settings:
+        "EDPT" 170,
+        "EHLT" 15;
+    }
+
+    .roboto-medium {
+      font-family: "Roboto", sans-serif;
+      font-weight: 500;
+      font-size: 30px;
+      font-style: normal;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <title>Google Trends</title>
+</head>
+<body>
+    <div class="content-wrapper">
+    <h1 class="roboto-medium"> MADS SIADS 699 | Cloud-based Retail Forecasting Solution Using <span class="nabla-title">Google Trends</span> </h1>
+    <h4>By Jennifer Shumway, Carl Debski, Kento Oigawa</h4>
+    <h6>Last updated on 10/26/2024</h6>
+    <div id="first">
+        <p><b>Project Description</b>: <br>For our capstone project, we are aiming to develop a tool, in a form of 
+          static website, hosted entirely on AWS cloud that performs forecasting based on user input on Google Trends data. 
+        Our intended users are small retail business owners who can use this tool to understand how customer demands may 
+      increase or decrease in the future, which would allow the owner to, for example, get additional inventory. </p>
+    
+      <p>
+        <b>Instructions</b>: <br>Enter a single, key based on interest (e.g., cake). Once entered, the value will be sent to 
+      AWS cloud hosted by Vocareum, processed by NLP and forecasting ML models to return related terms that can be used for follow-up forecasts as well as
+      an Altair visualization to show forecast figures. 
+      </p>
+    </div id="first">
+    <div class="container">
+      <p>There can be some delay after input is entered due to preflight checks and ML processing. In order to understand what is happening, we recommend you use developer tools 
+        in Chrome by going to options > "More Tools" > "Developer Tools". 
+        What happens once you sent an input is that OPTION call is sent first to establish CORS (Cross Origin Resource Sharing). Once that is done, POST method is made and various AWS services 
+        together to produce output, which will be returned below. Please note that if you are running for the first time, the OPTION call might not return 200. 
+        If that happens, please re-send the input. We suspect this is happening due to initial start up time.
+      </p>
+      <img src="image/developertool.png" alt="campbell"/>
+    </div>
+    <div id="second">
+        <p><br> When enetering a search term, please make sure
+        that the term is as specific as possible (i.e., term "mocha" is preferred to "coffee").<br><br></p>
+        <input type="text" id="userInput" placeholder="Enter keyword">
+        <button onclick="processInput()" class="button">Submit</button>
+        <!-- <p id="output"></p> -->
+
+    </div id="second">
+    <br>
+    <div id="entry-status"></div>
+    <br>
+    <div id="cache-status"></div>
+    <br>
+    <div id="relevant-terms"></div>
+    <br>
+    <div id="chart-status"></div>
+    <br>
+    <div id="chart"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
