@@ -2,7 +2,7 @@ function processInput() {
     // Get the user input value
     const userInput = document.getElementById("userInput").value;
     const messageValue = document.getElementById("entry-status");
-    const apiUrl = 'https://kwwrgpxiqh.execute-api.us-east-1.amazonaws.com/testFunction';
+    const apiUrl = 'https://kwwrgpxiqh.execute-api.us-east-1.amazonaws.com/websiteAPI';
     messageValue.textContent = "Thank you for the input! It can take a while for the results to appear. In the meantime, maybe you should go refill your coffee :)";
 
     // Display the modified value in the output paragraph
