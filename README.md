@@ -118,7 +118,7 @@ In order to deploy the tool, you have to make sure that you have a valid AWS acc
 <li>Create an S3 with the above configuration</li> 
 <li>Upload the content within koigawa/static_site into the newly created bucket</li>
 <li>Click the URL link on Bucket website endpoint to confirm that it is working</li>
-<li>On a local machine, download all files from this site and, in the active directory, create model.tar.gz as per below code and save it as s3://{your_bucket_name}/model/model.tar.gz, as this is needed later in SageMaker setup</li>
+<li>On a local machine, download all files from <a href=https://huggingface.co/fse/fasttext-wiki-news-subwords-300/tree/main>this site</a> and, in the active directory, create model.tar.gz as per below code and save it as s3://{your_bucket_name}/model/model.tar.gz, as this is needed later in SageMaker setup</li>
 </ul>
 
 ```
@@ -128,7 +128,7 @@ tar -czvf model.tar.gz -C model_files .
 ```
 
 <ul>
-<li>On a local machine, download jshumway/lstm_40_epochs.keras and save it under as s3://{your_bucket_name}/model/lstm_40_epochs.keras.</li>
+<li>On a local machine, download jshumway/lstm_40_epochs.keras and save it as s3://{your_bucket_name}/model/lstm_40_epochs.keras.</li>
 </ul>
 
 ### SageMaker
