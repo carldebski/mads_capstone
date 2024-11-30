@@ -20,3 +20,57 @@ There are three main files within the repository under the acronym of each team 
 
 ## How to deploy the tool to AWS
 In order to deploy the tool, you have to make sure that you have a valid AWS account and the correct configuration. Below are <b><ins>non-exhaustive</ins></b> instructions and details on configuration for the solution which was implemented for our project. Please note that there are many approaches to this and that there is no single solution. For example, instances can be much larger than the one we have used, depending on your specific needs and available resources.
+
+### API Gateway 
+<b>Why this service is needed</b>: This service acts as an entry point into AWS for the tool when you are passing values, as JSON payload, entered by the user. This service can be invoked by calling on the URL defined in the endpoint.<br><br>
+<b>Instructions</b>: 
+<ul>
+<li>Create HTTP API</li>
+<li>Configure Web API with POST and OPTIONS routes</li>
+<li>Configure Cross-Origin Resource Sharing</li>
+<li>Configure Integrations with Lambda function (Make sure you have a Lambda function made prior to this)</li>
+<li>Take note of the url within “Default endpoint” and the name of Routes as this will be required to call API from JavaScript</li>
+</ul>
+
+### EC2 
+<b>Why this service is needed</b>: This is needed for deploying the tool by building and pushing codes as Docker image to Elastic Container Repository.<br><br>
+<b>Configuration</b>:
+<li>Instance type: t2.micro</li>
+<li>OS: Amazon Linux 2</li>
+<li>EBS: gp2 of size 32 GiB</li>
+<br>
+<b>Instructions</b>:
+<ul>
+<li>Launch Amazon Linux 2 instance</li>
+<li>Install Python3.12, Docker</li>
+<li>Depending on the storage size, increase volume if you encounter any storage issues when you are installing packages or building Docker images</li>
+<li>Clone this github repository</li>
+<li>Push content within koigawa/lambda_app as a Docker image into a repository you have created in Elastic Container Repository (scripts to run on EC2 are available there)</li>
+<li>Create DynamoDB instance (either via CLI or interface) and change below “QueryTerms” into the instance name that you have chosen</li>
+</ul>
+
+        table = dynamodb.Table('QueryTerms')
+        item_key = {'input': key_word}
+        response = table.get_item(Key=item_key)
+
+### Lambda
+<b>Why this service is needed</b>: This is the serverless tool which will house the main Python script for the tool. It is triggered by a POST call passed through by API Gateway and performs a bunch of tasks such as calling DynamoDB, calling SageMaker endpoint, and then saving JSON output from Altair charts rendered into S3.<br>
+<b>Configuration</b>:
+<ul>
+<li>Architecture: x86_64</li>
+<li>Memory: 1024 MB</li>
+<li>Timeout: 15 mins</li>
+<li>Environment variables:</li>
+<ul>
+<li>SM_ENDPOINT_NAME: <i>{Enter name of your endpoint here}</i></li>
+<li>SM_INFERENCE_COMPONENT_NAME: <i>{Enter name of inference component name here}</i></li>
+</ul>
+</ul>
+<b>Instructions</b>:
+<ul>
+<li>Create Lambda function from a Docker image that you have built in EC2 and sent to ECR</li>
+<li>Configure IAM Role to ensure that the function can write log into CloudWatch Logs, run SageMaker and access S3</li>
+<li>Ensure integration with API Gateway by configuring Lambda Integration within API Gateway</li>
+</ul>
+
+
