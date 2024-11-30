@@ -21,7 +21,7 @@ def get_similar_words(search_word, n_words=5):
     
     model_path = '../models/wiki_word_embeddings'
 
-   # remove spaces from phrases
+    # remove spaces from phrases
     search_word = search_word.replace(" ","").lower()
 
     # retrive word embeddings model
@@ -45,7 +45,7 @@ def get_similar_words(search_word, n_words=5):
 
     # convert all words to lowercase
     word_cosine = [(word[0].lower(), word[1]) for word in word_cosine]
-
+    
     # extract the words
     words = [row[0] for row in word_cosine]
 
@@ -53,17 +53,21 @@ def get_similar_words(search_word, n_words=5):
     fastss = FastSS(words)
 
     # create container for unique related words
-    unique_words = set()
+    unique_words = []
 
     # for each word, check if it has similarities in the list
     # if any of the similar words have already been identified, continue
     for word in words:
-        similar_words = fastss.query(word, max_dist=2)[1]
+        similar_words = fastss.query(word, max_dist=2)[0]
+        similar_words.extend(fastss.query(word, max_dist=2)[1])
+        similar_words.extend(fastss.query(word, max_dist=2)[2])
 
-        if unique_words & set(similar_words):
+        if set(unique_words) & set(similar_words):
+            continue
+        elif word == search_word:
             continue
         else:
-            unique_words.add(word)
+            unique_words.append(word)
 
     # remove any of the same words
     for word in list(fastss.query(search_word, max_dist=2)[1]):
@@ -79,24 +83,10 @@ def get_similar_words(search_word, n_words=5):
     ranked_path_similarities = sorted(list(zip(path_similarities, unique_words)), reverse=True)
     ranked_words = [w[1] for w in ranked_path_similarities]
 
-    # trim related words to top 50
+    # trim related words to top n
     related_words = {search_word: ranked_words[:n_words]}
 
     return related_words
-
-
-def get_hypernyms(term):
-    # this function will retrive the hypernyms
-
-    try:
-        synset = wn.synsets(term)[0]
-        hypernyms = synset.hypernyms()[0].lemma_names()[0]
-            
-        return hypernyms
-    
-    except IndexError:
-        pass
-
 
 def get_wordnet_path_similarity(search_term, term):
     # this function will retrive the path symilarity of words using wordnet
@@ -111,8 +101,7 @@ def get_wordnet_path_similarity(search_term, term):
     except IndexError:
         
         return 0
-
-
+    
 
 if __name__ == "__main__":
     
