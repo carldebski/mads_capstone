@@ -7,16 +7,16 @@ from nltk.corpus import wordnet as wn
 
 def get_similar_words(search_word, n_words=5):
     """
-    takes in a word and returns n related words based on their cosine similarity. words that are 
-    too similar are identified using the levenshtein edit distance and removed. words are further ranked by their 
-    wordnet path difference. 
+    takes in a word and returns n related words based on their cosine similarity. Words that are 
+    too similar are identified using the levenshtein edit distance and removed. 
+    Words are further ranked by their wordnet path difference. 
     
     args:
         > word (txt): search term
         > n_words (int): number of related words to return
 
     returns:
-        > related_words (dict): a dictionary in the format {search_word: related_words} 
+        > related_words (dict): a dictionary in the format {search_word: [related_words]} 
     """
     
     model_path = '../models/wiki_word_embeddings'
@@ -88,8 +88,9 @@ def get_similar_words(search_word, n_words=5):
 
     return related_words
 
+
 def get_wordnet_path_similarity(search_term, term):
-    # this function will retrive the path symilarity of words using wordnet
+    # this function will retrive the path similarity of words using wordnet
 
     try:
         synset1 = wn.synsets(search_term)[0]
