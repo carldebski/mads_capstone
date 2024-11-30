@@ -6,7 +6,22 @@
 
 ## Project Description
 ![screenshot](tool_screenshot.png)
-<br>This is a README for codes used on a capstone project for Master of Applied Data Science at the University of Michigan School of Information. In our project, we aimed to create a cost-effective, cloud-based (AWS) tool that performs forecasting of semantically related terms on Google Trends. The motivation for the project was to apply data science knowledge we had learnt throughout the graduate program, and chose to make a cloud-based tool to implement user interface as in business environment there are many pre-built, ready-to-use tools and services available, meaning that there is increased need to be able to put things together in a timely manner and below budget.
+<br><br>
+This is a README for a repository that stores codes used on SIADS 699 Capstone project for Master of Applied Data Science program at the University of Michigan School of Information. 
+As this was our final course for the graduate degree program, our main motivations were:
+<ul>
+<li>Apply data science knowledge that we have learnt throughout the program, in areas such as machine learning, data pipelines, data visualizations, natural language processing, data mining and cloud computing</li>
+<li>Create some type of tangible output that will help solve and addresses some type of realistic business problems and needs</li>
+</ul>
+Based on the above motivation, we have decided to create a light-weight, cost-effective tool hosted in the cloud that performs forecasting of popularity of semantically related terms. To do so we leverage Google Trends, a website by Google that analyzes popularity of top search queries in Google Search across various regions and languages. Our intended audience for this tool were small retail business owners who can use the tool to keep up with both long-term and short-term trends of product or product types in order to make decisions about stocking and inventory purchases.
+<br><br>
+Due to time and resource constraints, we have determined minimally viable product (MVP) criteria as follows:
+
+| Component  | MVP Criteria |
+| ------------- | ------------- |
+| Natural Language Processing (NLP)  | <ul><li>- [x] Take user search terms and come up with semantically related terms</li><ul>  |
+| Forecasting and Seasonality  | <ul><li>- [x] Take the results of NLP processing and perform a forecast of popularity based on Google Trends data</li><li>- [x] Identify seasonal and non-seasonal trends in popularity of the terms</li><ul>|
+| Cloud-based Architecture  | <ul><li>- [x] Integrate outputs from two ML solutions and deliver visualizations/dashboard to the user with the service being hosted on a static or dynamic website on AWS</li><li>- [x] Spend less than 200 USD to develop a solution that is able to run well beyond the end of the capstone project</li><ul>|
 
 ## Content
 There are three main files within the repository under the acronym of each team member: 
@@ -17,6 +32,10 @@ There are three main files within the repository under the acronym of each team 
 </ul>
 
 ## Understanding Code & Example Workflows
+
+### Natural Language Processing
+
+### Forecasting and Seasonality
 
 ## How to deploy the tool to AWS
 In order to deploy the tool, you have to make sure that you have a valid AWS account and the correct configuration. Below are <b><ins>non-exhaustive</ins></b> instructions and details on configuration for the solution which was implemented for our project. Please note that there are many approaches to this and that there is no single solution. For example, instances can be much larger than the one we have used, depending on your specific needs and available resources.
@@ -30,6 +49,13 @@ In order to deploy the tool, you have to make sure that you have a valid AWS acc
 <li>Configure Cross-Origin Resource Sharing</li>
 <li>Configure Integrations with Lambda function (Make sure you have a Lambda function made prior to this)</li>
 <li>Take note of the url within “Default endpoint” and the name of Routes as this will be required to call API from JavaScript</li>
+</ul>
+
+### Elastic Container Repository (ECR)
+<b>Why this service is needed</b>: In order for the tool to work, Lambda function and SageMaker endpoint both require Docker images. To store Docker images which can be deployed to the two services, the images must be pushed to ECR.<br>
+<b>Instructions</b>:
+<ul>
+<li>Create a private repository within ECR that will contain two images: one for Lambda function and one for SageMaker</li>
 </ul>
 
 ### EC2 
