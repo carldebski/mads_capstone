@@ -52,7 +52,7 @@ In order to deploy the tool, you have to make sure that you have a valid AWS acc
         sudo systemctl start docker
 
 <ul>
-<li>Create DynamoDB instance (either via CLI or interface) and change below “QueryTerms” into the instance name that you have chosen</li>
+<li>Create DynamoDB instance (either via CLI or interface) and change value of “QueryTerms” into the instance name that you have chosen within handler function of koigawa/lambda_app/app.py</li>
 </ul>
 
         table = dynamodb.Table('QueryTerms')
