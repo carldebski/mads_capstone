@@ -1,6 +1,6 @@
 # Creating a cost-effective, lightweight tool hosted on Cloud services that forecasts popularity of terms on Google Trends for small retail business owners
 
-<b>Date</b>: 2024/12/09<br>
+<b>Last updated</b>: 2024/12/09<br>
 <b>Members</b>: Jennifer Shumway, Carl Debski, Kento Oigawa
 
 
