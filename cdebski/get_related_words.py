@@ -102,6 +102,36 @@ def get_wordnet_path_similarity(search_term, term):
     except IndexError:
         
         return 0
+
+def get_synonyms(term):
+    # retrive the synonyms of a term 
+    synonyms = wn.synonyms(term)
+
+    return synonyms
+
+
+def get_hyponyms(term):
+    # this function will retrive the hyponyms (subordinate synonyms - e.g. Horse is a hyponym for animal) 
+    # from the NLTK 
+    
+    hyponyms = []
+    synset = wn.synsets(term)[0]
+    for w in synset.hyponyms():
+        hyponyms.append(w.lemma_names())
+
+    return hyponyms
+
+def get_hypernyms(term):
+    # this function will retrive the hypernyms
+
+    try:
+        synset = wn.synsets(term)[0]
+        hypernyms = synset.hypernyms()[0].lemma_names()[0]
+            
+        return hypernyms
+    
+    except IndexError:
+        pass
     
 
 if __name__ == "__main__":
