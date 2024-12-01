@@ -36,7 +36,7 @@ There are three main files within the repository under the acronym of each team 
 ### Natural Language Processing
 The NLP function uses a three step process. 
 <ul>
-<li><b>Finding Relevant Terms Used:</b> Using a gensim word embedding model (fasttext-wiki-news-subwords-300: link) we are returning the terms with the highest cosine similarity to the search term.</li>
+<li><b>Finding Relevant Terms Used:</b> Using a gensim word embedding model (fasttext-wiki-news-subwords-300) we are returning the terms with the highest cosine similarity to the search term.</li>
 <li><b>Eliminating Spelling Variations:</b> Uses the Levenshtein Distance to measure the similarity to the search term and removes matching words within a distance of 2 or less. </li>
 <li><b>Group Sorting Relevant Topics:</b> Incorporates semantic groups as a part of the sorting to find the most relevant terms. This is achieved using a lexical database (WordNet) by calculating the path distance to the search term to prioritize relevance and semantic group using the shortest distance.</li> 
 </ul>
@@ -47,7 +47,7 @@ Import the module.
 
         from get_related_words import get_similar_words
 
-Call the function using the search terms and optional number of returned results
+Call the function using the search term and optional number of returned results
 
         get_similar_words('Lemonade', n_words=5)
 
@@ -63,11 +63,13 @@ Optionally, WordNet values can be retrieved or the path distance between words p
         from get_related_words import get_synonyms
         from get_related_words import get_get_wordnet_path_similarity
 
+
         # retrieve hypernyms
         hypernyms = get_hypernyms('coffee')
         print('hypernyms:{}'.format(hypernyms))
 
         hypernyms: beverage
+
 
         # retrieve synonyms
         synonyms = get_synonyms('coffee')
@@ -75,11 +77,13 @@ Optionally, WordNet values can be retrieved or the path distance between words p
 
         synonyms: [['java'], ['coffee_tree'], ['coffee_bean', 'coffee_berry']...]
 
+
         # retrieve hyponyms
         hyponyms = get_hyponyms('coffee')
         print('hyponyms:{}'.format(hyponyms))
 
         hyponyms: [['instant_coffee'], ['mocha', 'mocha_coffee'], ['drip_coffee']...]
+
 
         # return the path distance between two words in WordNet (the same word returns a 
         # distance of 1)
@@ -89,6 +93,7 @@ Optionally, WordNet values can be retrieved or the path distance between words p
         print('The path distance between {} and {} is {}.'.format(term1, term2, dist))
 
         The path distance between beverage and mocha is 0.1
+        
 
 ### Forecasting and Seasonality
 
