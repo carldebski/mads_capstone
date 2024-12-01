@@ -26,7 +26,7 @@ Due to time and resource constraints, we have determined minimally viable produc
 ## Content
 There are three main files within the repository under the acronym of each team member: 
 <ul>
-<li>“<b>cdebski</b>” contains scripts, Jupyter notebooks and requirements.txt file for natural language processing (NLP).</li>
+<li>“<b>cdebski</b>” contains the files for natural language processing (NLP). This includes the primary script, <b>get_related_words.py</b>, for returning the related search words, an exploratory Jupyter notebook, <b>related_terms.ipynb</b>, for generating specific values and visualizations for the report, and <b>requirements_cdebski.txt</b> file needed to set up the NLP environment. Embedding models are also saved here when generated, however, they are not pushed to Git due to its file size restrictions.</li>
 <li>“<b>jshumway</b>” contains scripts, Jupyter notebooks and requirements.txt file for extracting Google Trends data and for performing both forecasting and identification of seasonality on that data.</li>
 <li>“<b>koigawa</b>” contains codes, scripts,  and requirements.txt file used to build a static website and SageMaker application that incorporates scripts within “cdebski” and “jshumway” folders.</li>
 </ul>
@@ -34,6 +34,61 @@ There are three main files within the repository under the acronym of each team 
 ## Understanding Code & Example Workflows
 
 ### Natural Language Processing
+The NLP function uses a three step process. 
+<ul>
+<li><b>Finding Relevant Terms Used:</b> Using a gensim word embedding model (fasttext-wiki-news-subwords-300: link) we are returning the terms with the highest cosine similarity to the search term.</li>
+<li><b>Eliminating Spelling Variations:</b> Uses the Levenshtein Distance to measure the similarity to the search term and removes matching words within a distance of 2 or less. </li>
+<li><b>Group Sorting Relevant Topics:</b> Incorporates semantic groups as a part of the sorting to find the most relevant terms. This is achieved using a lexical database (WordNet) by calculating the path distance to the search term to prioritize relevance and semantic group using the shortest distance.</li> 
+</ul>
+
+To perform all three steps in the NLP process:
+
+Import the module.
+
+        from get_related_words import get_similar_words
+
+Call the function using the search terms and optional number of returned results
+
+        get_similar_words('Lemonade', n_words=5)
+
+Results are returned in the format {search_word: [list_of_related_words]}
+
+        {'lemonade: ['orangeade', 'limeade', 'beverage'...]}
+
+Optionally, WordNet values can be retrieved or the path distance between words provided. 
+
+        # import functions
+        from get_related_words import get_hypernyms
+        from get_related_words import get_hyponyms
+        from get_related_words import get_synonyms
+        from get_related_words import get_get_wordnet_path_similarity
+
+        # retrieve hypernyms
+        hypernyms = get_hypernyms('coffee')
+        print('hypernyms:{}'.format(hypernyms))
+
+        hypernyms: beverage
+
+        # retrieve synonyms
+        synonyms = get_synonyms('coffee')
+        print('synonyms:{}'.format(synonyms))
+
+        synonyms: [['java'], ['coffee_tree'], ['coffee_bean', 'coffee_berry']...]
+
+        # retrieve hyponyms
+        hyponyms = get_hyponyms('coffee')
+        print('hyponyms:{}'.format(hyponyms))
+
+        hyponyms: [['instant_coffee'], ['mocha', 'mocha_coffee'], ['drip_coffee']...]
+
+        # return the path distance between two words in WordNet (the same word returns a 
+        # distance of 1)
+        term1 = 'beverage'
+        term2 = 'mocha'
+        dist = get_wordnet_path_similarity(term1, term2)
+        print('The path distance between {} and {} is {}.'.format(term1, term2, dist))
+
+        The path distance between beverage and mocha is 0.1
 
 ### Forecasting and Seasonality
 
