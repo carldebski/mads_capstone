@@ -1,3 +1,11 @@
+"""
+This is the main code of the application that the static website runs on.
+While the final output is JSON, the final outcome of this script is that
+it updates content on S3, which is rendered to the user.
+While no meaningful section of the codes were written using generative AI
+some snippets were influced by output from ChatGPT4o.
+"""
+
 import json
 import pandas as pd
 import altair as alt
@@ -18,13 +26,30 @@ from scipy.fftpack import fft, rfft
 s3 = boto3.client('s3')
 
 def handler(event, context):
+    '''
+    This is the function that gets called by API Gateway after user enters a term.
+    It takes the term, checks against catch to see if the term was previously seen.
+    If not, it will send the input to SageMaker API endpoint to get related terms.
+    Then, it will call several functions to get GTAB data and perform forecasting.
+    Finally, Altair chart will be rendered and saved as a JSON file on S3.
 
-    # Eventually change this to only run at POST call
+    args:
+        > event (JSON): Contains details of JSON payload passed by API Gateway
+        > context (JSON): Additional information - not used
+
+    returns:
+        > result (JSON): Contains caching status of searched term as well as related terms
+
+    '''
+
+    # Writes details of input to CloudWatch Logs
     print(event)
+    # Needed to pass pre-flight checks
     output = 'temp_val'
     status = 'temp_val'
     chart_spec = None
 
+    # Ignores call by OPTION method
     if event['httpMethod'] == 'POST':
         key_word = json.loads(event['body'])["keyWord"]
         print("User value retrieved!")
@@ -66,6 +91,8 @@ def handler(event, context):
             status = 'New'
             output = key_word + ", " + response_list
 
+
+        # Calls on forecasting based on related terms retrieved
         create_forecast_data(output)
         generate_predictions()
         generate_seasonal()
@@ -141,7 +168,7 @@ def handler(event, context):
             text="text",
             opacity=opacity_text,
         )
-
+        # We use FiveThirtyEight theme - for no particular reason
         with alt.themes.enable('fivethirtyeight'):
             chart_json = alt.vconcat(chart, chart_two,chart_three,chart_four).configure_axis(
                 grid=False
@@ -162,6 +189,7 @@ def handler(event, context):
         bucket_name = "mads-siads699-capstone-cloud9"
         file_name = "altair/chart.json"
 
+        # Saves JSON chart into S3
         s3.put_object(
             Bucket=bucket_name,
             Key=file_name,
@@ -182,21 +210,20 @@ def handler(event, context):
     }
 
 def get_single_keyword_trend_data_gtab(keyword, region='US'):
-
-    day_ago = date.today() - timedelta(days=1)
-    year_ago = date.today() - timedelta(days=731)
-    time_period = year_ago.strftime("%Y-%m-%d") + " " + day_ago.strftime("%Y-%m-%d")
     """
     Query Google Trends data using GTAB for a single keyword, region, and time period.
 
     Args:
         keyword (str): The keyword to search.
         region (str): Region code (default is 'US').
-        time_period (str): Timeframe for the data (default is '2020-01-01 2024-10-11').
-
     Returns:
         pd.DataFrame: Google Trends data for the keyword with Date and Max Ratio (Interest) columns.
     """
+
+    # Sets rolling period two years of data
+    day_ago = date.today() - timedelta(days=1)
+    year_ago = date.today() - timedelta(days=731)
+    time_period = year_ago.strftime("%Y-%m-%d") + " " + day_ago.strftime("%Y-%m-%d")
 
     source_dir = '/var/lang/lib/python3.12/site-packages/gtab'
     destination_dir = '/tmp/gtab'
@@ -241,6 +268,16 @@ def get_single_keyword_trend_data_gtab(keyword, region='US'):
         return None
 
 def create_forecast_data(keywords,region="US"):
+    """
+    Calls get_single_keyword_trend_data_gtab iteratively to compile GTAB data.
+    The result is saved as CSV in S3 to be referenced by functions to find seasonality and perform forecast
+
+    Args:
+        keyword (str): The keyword to search.
+        region (str): Region code (default is 'US').
+    Returns:
+        None
+    """
 
     # Process the keywords and region
     keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]  # Clean whitespace and ensure each is a string
@@ -282,40 +319,25 @@ def predict_future(model, keyword_data, time_step, num_predictions):
 def generate_future_dates(last_date, num_predictions, interval_days=7):
     return pd.date_range(start=last_date + pd.Timedelta(days=interval_days), periods=num_predictions, freq=f'{interval_days}D')
 
-def predict_future(model, keyword_data, time_step, num_predictions):
-    # Get the last known data for the keyword
-    last_sequence = keyword_data[-time_step:]  # The last time-step sequence from the data
-    predictions = []
-
-    for _ in range(num_predictions):
-        # Reshape to match the input shape for the RNN
-        predicted = model.predict(last_sequence.reshape(1, time_step, 1))
-        predictions.append(predicted[0, 0])  # Get the predicted value
-
-        # Update the sequence with the predicted data for the next step
-        last_sequence = np.append(last_sequence[1:], predicted)  # Update the last sequence
-
-    return predictions
-
-
-# Function to generate future dates based on the last date in the dataframe
-def generate_future_dates(last_date, num_predictions, interval_days=7):
-    return pd.date_range(start=last_date + pd.Timedelta(days=interval_days), periods=num_predictions, freq=f'{interval_days}D')
-
-
 def generate_predictions():
-    # Import the output of DataExtractionGTAB.py
+    """
+    Generatees forecast based on GTAB data and saves as CSV file on S3 for Altair chart rendering
+    Args:
+        None
+    Returns:
+        None
+    """
+
+    # Import the output of create_forecast_data
     data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
     # Import model
     bucket_name = 'mads-siads699-capstone-cloud9'
-    # model_key = 'model/rnn_model_limited_data_v1.pkl'
-    # model_path = '/tmp/rnn_model_limited_data_v1.pkl'
     model_key = 'model/lstm_40_epochs.keras'
+    # This is where ephemeral storge of Lambda lives
     model_path = '/tmp/lstm_40_epochs.keras'
     s3.download_file(bucket_name, model_key, model_path)
 
-    #with open(model_path, 'rb') as file:
-        #model = pickle.load(file)
+    # Loads the model
     model = load_model(model_path)
 
     # variables
@@ -361,6 +383,14 @@ def generate_predictions():
     combined_df.to_csv('s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv')
 
 def generate_seasonal():
+    """
+    Based on the GTAB data, it identifies seasonality and saves CSV into S3 for Altair chart rendering
+
+    Args:
+        None
+    Returns:
+        None
+    """
     data = pd.read_csv('s3://mads-siads699-capstone-cloud9/data/combined_trend_data.csv')
 
     df_fourier = pd.DataFrame()
@@ -422,7 +452,6 @@ def generate_seasonal():
 
 
     # Additional processing for Altair
-
     df_fourier["date"] = data["date"].values
     cols = [ col for col in df_fourier.columns if col not in ['date']]
     df_fourier = pd.melt(df_fourier,id_vars=["date"], value_vars=cols)

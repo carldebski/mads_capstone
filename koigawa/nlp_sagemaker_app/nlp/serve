@@ -11,7 +11,12 @@
 # Parameter                Environment Variable              Default Value
 # ---------                --------------------              -------------
 # number of workers        MODEL_SERVER_WORKERS              the number of CPU cores
-# timeout                  MODEL_SERVER_TIMEOUT              60 seconds
+# timeout                  MODEL_SERVER_TIMEOUT              60 seconds (changed to 300 seconds)
+
+# This code was not written by Capstone project members
+# The code copied from below cookie cutter code provided by AWS and then timeout was modified
+# https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/decision_trees/serve
+
 
 import multiprocessing
 import os

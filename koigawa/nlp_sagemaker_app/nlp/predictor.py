@@ -1,6 +1,11 @@
 # This is the file that implements a flask server to do inferences. It's the file that you will modify to
 # implement the scoring for your own algorithm.
 
+# This code was not written from scratch by Capstone project members
+# The code copied from AWS code sample and then edited to allow for it to work on our code
+# https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/decision_trees/predictor.py
+
+
 from __future__ import print_function
 
 import io
@@ -84,18 +89,22 @@ class ScoringService(object):
         fastss = FastSS(words)
 
         # create container for unique related words
-        unique_words = set()
+        unique_words = []
 
 
         # for each word, check if it has similarities in the list
         # if any of the similar words have already been identified, continue
         for word in words:
-            similar_words = fastss.query(word, max_dist=2)[1]
+            similar_words = fastss.query(word, max_dist=2)[0]
+            similar_words.extend(fastss.query(word, max_dist=2)[1])
+            similar_words.extend(fastss.query(word, max_dist=2)[2])
 
-            if unique_words & set(similar_words):
+            if set(unique_words) & set(similar_words):
+                continue
+            elif word == input:
                 continue
             else:
-                unique_words.add(word)
+                unique_words.append(word)
 
         # remove any of the same words
         for word in list(fastss.query(input, max_dist=2)[1]):
@@ -144,19 +153,6 @@ def transformation():
     except Exception as e:
         logger.error(f"Invocations failed: {e}")
         return flask.Response(response=f"Failed with {data}", status=415, mimetype="text/plain")
-
-
-def get_hypernyms(term):
-    # this function will retrive the hypernyms
-
-    try:
-        synset = wn.synsets(term)[0]
-        hypernyms = synset.hypernyms()[0].lemma_names()[0]
-        return hypernyms
-
-    except IndexError:
-        pass
-
 
 def get_wordnet_path_similarity(search_term, term):
     # this function will retrive the path symilarity of words using wordnet
