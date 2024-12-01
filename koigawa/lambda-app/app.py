@@ -184,7 +184,7 @@ def handler(event, context):
 def get_single_keyword_trend_data_gtab(keyword, region='US'):
 
     day_ago = date.today() - timedelta(days=1)
-    year_ago = date.today() - timedelta(days=366)
+    year_ago = date.today() - timedelta(days=731)
     time_period = year_ago.strftime("%Y-%m-%d") + " " + day_ago.strftime("%Y-%m-%d")
     """
     Query Google Trends data using GTAB for a single keyword, region, and time period.
@@ -310,8 +310,8 @@ def generate_predictions():
     bucket_name = 'mads-siads699-capstone-cloud9'
     # model_key = 'model/rnn_model_limited_data_v1.pkl'
     # model_path = '/tmp/rnn_model_limited_data_v1.pkl'
-    model_key = 'model/LSTM40Epochs.keras'
-    model_path = '/tmp/LSTM40Epochs.keras'
+    model_key = 'model/lstm_40_epochs.keras'
+    model_path = '/tmp/lstm_40_epochs.keras'
     s3.download_file(bucket_name, model_key, model_path)
 
     #with open(model_path, 'rb') as file:
@@ -320,7 +320,7 @@ def generate_predictions():
 
     # variables
     num_predictions = 10
-    time_step = 10 # Define time step (number of previous observations) considered - this needs to match model trainings
+    time_step = 50 # Define time step (number of previous observations) considered - this needs to match model trainings
 
     # Extend df to have 10 future dates
     data['date'] = pd.to_datetime(data['date'])
