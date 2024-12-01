@@ -19,7 +19,7 @@ def get_similar_words(search_word, n_words=5):
         > related_words (dict): a dictionary in the format {search_word: [related_words]} 
     """
     
-    model_path = '../models/wiki_word_embeddings'
+    model_path = '../cdebski/wiki_word_embeddings'
 
     # remove spaces from phrases
     search_word = search_word.replace(" ","").lower()
