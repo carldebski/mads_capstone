@@ -33,8 +33,7 @@ if __name__ == "__main__":
     # Import the output of DataExtractionGTAB.py
     data = pd.read_csv('combined_keyword_data.csv')
     # Import model
-    with open('model.pkl', 'rb') as file:
-        model = pickle.load(file)
+    model = load_model('lstm_40_epochs.keras')
    
     # variables
     num_predictions = 10
