@@ -97,6 +97,26 @@ Optionally, WordNet values can be retrieved or the path distance between words p
 
 ### Forecasting and Seasonality
 
+In order to perform your own forecasting or duplicate the results we have illustrated it is recommended to take the following workflow:    
+
+1. Data collection   
+   a. __Data_extraction_gtab.ipynb__ contains the code necessary to extract data for any keyword for any region.
+   b. All data we leveraged is available in the file __all_merged_data.csv__ and each of the following notebooks begin with importing this data and splitting it directly into train/dev/test partitions. 
+
+3. Hyperparameter tuning and model training
+   a. The final trained model is available as __lstm_40_epochs.keras__ alternatively you can follow our workflow through __hyper_parameter_tuning.ipynb__, __hyper_parameter_tuning_viz.ipynb__ and __model_training.ipynb__
+   
+5. Seasonality
+   a. Lastly you can explore seasonality for any keyword via fourier transform with the notebook __fourier_transform_seasonality.ipynb__
+
+
+Additionally, the scripts used in the application are available in the subfolder scripts and can be executed directly. 
+
+
+
+
+
+
 ## How to deploy the tool to AWS
 In order to deploy the tool, you have to make sure that you have a valid AWS account and the correct configuration. Below are <b><ins>non-exhaustive</ins></b> instructions and details on configuration for the solution which was implemented for our project. Please note that there are many approaches to this and that there is no single solution. For example, instances can be much larger than the one we have used, depending on your specific needs and available resources.
 
