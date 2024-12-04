@@ -107,7 +107,7 @@ def handler(event, context):
                         "Access-Control-Allow-Headers": "*"
                     },
                     "body": json.dumps({'cache_status':status,
-                                        'relevant_terms':'output',
+                                        'relevant_terms':output,
                                         'nlp_status':'Successful!',
                                         'forecast_status':'Error! This is likely due to HTTPSConnectionPool issue with Pytrend. Please try again later.'
                                         })
