@@ -97,6 +97,8 @@ Optionally, WordNet values can be retrieved or the path distance between words p
 
 ### Forecasting and Seasonality
 
+ChatGPT was referenced and leveraged, although never copy exact, for the creation of the code in this section.     
+
 In order to perform your own forecasting or duplicate the results we have illustrated it is recommended to take the following workflow:    
 
 1. Data collection   
@@ -110,7 +112,7 @@ In order to perform your own forecasting or duplicate the results we have illust
    a. Lastly you can explore seasonality for any keyword via fourier transform with the notebook __fourier_transform_seasonality.ipynb__
 
 
-Additionally, the scripts used in the application are available in the subfolder scripts and can be executed directly. 
+Additionally, the scripts used in the application are available in the subfolder scripts and can be executed directly.  
 
 
 
