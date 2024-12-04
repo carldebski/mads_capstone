@@ -66,30 +66,46 @@ def handler(event, context):
             output = key_word + ", " + response['Item']['related_words']
             status = response['Item']['status']
         except:
-            sagemaker_runtime = boto3.client('sagemaker-runtime')
+            try:
+                sagemaker_runtime = boto3.client('sagemaker-runtime')
 
-            endpoint_name = os.getenv('SM_ENDPOINT_NAME')
-            inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
+                endpoint_name = os.getenv('SM_ENDPOINT_NAME')
+                inference_component_name = os.getenv('SM_INFERENCE_COMPONENT_NAME')
 
-            response = sagemaker_runtime.invoke_endpoint(
-                    EndpointName = endpoint_name,
-                    ContentType = "text/plain",
-                    Body = key_word,
-                    InferenceComponentName = inference_component_name
-                    )
+                response = sagemaker_runtime.invoke_endpoint(
+                        EndpointName = endpoint_name,
+                        ContentType = "text/plain",
+                        Body = key_word,
+                        InferenceComponentName = inference_component_name
+                        )
 
-            print(response)
-            response_list = (", ").join(response["Body"].read().decode('utf-8').split(";")[:3])
+                print(response)
+                response_list = (", ").join(response["Body"].read().decode('utf-8').split(";")[:3])
 
-            item = {
-                'input': key_word,
-                'status': 'Cached',
-                'related_words': response_list
-                    }
+                item = {
+                    'input': key_word,
+                    'status': 'Cached',
+                    'related_words': response_list
+                        }
 
-            table.put_item(Item=item)
-            status = 'New'
-            output = key_word + ", " + response_list
+                table.put_item(Item=item)
+                status = 'New'
+                output = key_word + ", " + response_list
+            except:
+                return {
+                    'statusCode': 500,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "POST,OPTIONS",
+                        "Access-Control-Allow-Headers": "*"
+                    },
+                    "body": json.dumps({'cache_status':'N/A',
+                                        'relevant_terms':'N/A',
+                                        'nlp_status':'Error! Please try again!',
+                                        'forecast_status':'Could not process due to error on NLP process'
+                                        })
+                }
 
 
         # Calls on forecasting based on related terms retrieved
