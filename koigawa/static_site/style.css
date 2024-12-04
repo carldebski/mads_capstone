@@ -1,7 +1,10 @@
+/*
+This is CSS file to set styling for HTML file in the same directory.
+
+Generative AI in the form of ChatGPT was used to research on the right syntax to use.
+*/
 body {
-    /* background-color: dimgray; */
     background-image: url("image/background.png");
-    /* background-repeat: no-repeat; */
     background-attachment: fixed;
     color: white;
     padding-left: 30%;
@@ -19,12 +22,11 @@ body {
 
 .container img {
     width: 300px;
-    /* max-width: 100% */
     height: auto;
 }
 
 .button {
-  background-color: white; /* Green */
+  background-color: white;
   border: none;
   color: black;
   padding: 10px 10px;
@@ -54,12 +56,10 @@ body {
 }
 
 .content-wrapper {
-  max-width: 640px; /* Set the max-width to the width you want for the content area */
-  margin: 0 auto; /* Center the content */
-  /* background-color: gray; Center background color */
-  background-image: url("image/background-two.png"); 
-  /* background-repeat: no-repeat; */
+  max-width: 640px;
+  margin: 0 auto;
+  background-image: url("image/background-two.png");
   background-attachment: fixed;
   opacity: 0.90;
-  padding: 20px; /* Optional: Add some padding for spacing inside the content area */
+  padding: 20px;
 }

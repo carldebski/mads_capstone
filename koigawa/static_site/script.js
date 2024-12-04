@@ -1,3 +1,10 @@
+/*
+This is the JavaScrip that sends OPTION and POST API calls to API Gateway on AWS.
+Once the results come back, they are rendered on HTML.
+
+Generative AI in the form of ChatGPT was used to research on the right syntax to use.
+*/
+
 function processInput() {
     // Get the user input value
     const userInput = document.getElementById("user-input").value;
