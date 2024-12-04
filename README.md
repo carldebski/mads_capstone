@@ -28,7 +28,7 @@ There are three main files within the repository under the acronym of each team 
 <ul>
 <li>“<b>cdebski</b>” contains the files for natural language processing (NLP). This includes the primary script, <b>get_related_words.py</b>, for returning the related search words, an exploratory Jupyter notebook, <b>related_terms.ipynb</b>, for generating specific values and visualizations for the report, and <b>requirements_cdebski.txt</b> file needed to set up the NLP environment. Embedding models are also saved here when generated, however, they are not pushed to Git due to its file size restrictions.</li>
 <li>“<b>jshumway</b>” contains scripts, Jupyter notebooks and requirements.txt file for extracting Google Trends data and for performing both forecasting and identification of seasonality on that data.</li>
-<li>“<b>koigawa</b>” contains codes, scripts,  and requirements.txt file used to build a static website and SageMaker application that incorporates scripts within “cdebski” and “jshumway” folders.</li>
+<li>“<b>koigawa</b>” contains codes, scripts,  and requirements.txt file used to build a static website and SageMaker application that incorporates scripts within “cdebski” and “jshumway” folders. <b>lambda_app</b> file contains content you need to make a Lambda function using Docker image and <b>nlp_sagemaker_app</b> does the same except for SageMaker inference endpoint instead of Lambda. <b>static_site</b> contains code you need to create website that will act as the main interface. To deployment instructions, please refer to "How to deploy the tool to AWS" section.</li>
 </ul>
 
 ## Understanding Code & Example Workflows
