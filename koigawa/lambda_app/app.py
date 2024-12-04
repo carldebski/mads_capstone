@@ -93,9 +93,25 @@ def handler(event, context):
 
 
         # Calls on forecasting based on related terms retrieved
-        create_forecast_data(output)
-        generate_predictions()
-        generate_seasonal()
+        try:
+            create_forecast_data(output)
+            generate_predictions()
+            generate_seasonal()
+        except:
+                return {
+                    'statusCode': 500,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "POST,OPTIONS",
+                        "Access-Control-Allow-Headers": "*"
+                    },
+                    "body": json.dumps({'cache_status':status,
+                                        'relevant_terms':'output',
+                                        'nlp_status':'Successful!',
+                                        'forecast_status':'Error! This is likely due to HTTPSConnectionPool issue with Pytrend. Please try again later.'
+                                        })
+                }
 
         df = pd.read_csv("s3://mads-siads699-capstone-cloud9/data/combined_forecast_df.csv")
         df.drop(columns=df.columns[0], axis=1, inplace=True)
@@ -206,7 +222,11 @@ def handler(event, context):
             "Access-Control-Allow-Methods": "POST,OPTIONS",
             "Access-Control-Allow-Headers": "*"
         },
-        "body": json.dumps({'cache_status':status,'relevant_terms':output})
+        "body": json.dumps({'cache_status':status,
+                            'relevant_terms':output,
+                            'nlp_status':'Successful!',
+                            'forecast_status':'Successful!'
+                            })
     }
 
 def get_single_keyword_trend_data_gtab(keyword, region='US'):

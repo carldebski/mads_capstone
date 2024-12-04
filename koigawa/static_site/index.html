@@ -40,7 +40,7 @@
     <div class="content-wrapper">
     <h1 class="roboto-medium"> MADS SIADS 699 | Cloud-based Retail Forecasting Solution Using <span class="nabla-title">Google Trends</span> </h1>
     <h4>By Jennifer Shumway, Carl Debski, Kento Oigawa</h4>
-    <h6>Last updated on 11/25/2024</h6>
+    <h6>Last updated on 12/04/2024</h6>
     <div id="first">
         <p><b style="font-size: 18px">Project Description</b> <br>For our capstone project, we are aiming to develop a tool, in a form of 
           static website, hosted entirely on AWS cloud that performs forecasting based on user input on Google Trends data. 
@@ -50,12 +50,13 @@
       <p>
         <b style="font-size: 18px">Instructions</b><br>Enter a single, key based on interest (e.g., cake). Once entered, the value will be sent to 
       AWS cloud hosted by Vocareum, processed by NLP and forecasting ML models to return related terms that can be used for follow-up forecasts as well as
-      an Altair visualization to show forecast figures. 
+      an Altair visualization to show forecast figures. There can be some delay after input is entered due to preflight checks and ML processing. We have three recommendations in 
+      order to ensure optimal experience.
       </p>
     </div id="first">
     <div class="container">
-      <p>There can be some delay after input is entered due to preflight checks and ML processing. In order to understand what is happening, we recommend you use developer tools 
-        in Chrome by going to options > "More Tools" > "Developer Tools". 
+      <p>1. In order to understand what is happening, we recommend you <u><b>use developer tools</b></u>
+        in Chrome by going to options > "More Tools" > "Developer Tools", in the Network section. 
         What happens once you sent an input is that OPTION call is sent first to establish CORS (Cross Origin Resource Sharing). Once that is done, POST method is made and various AWS services 
         together to produce output, which will be returned below. Please note that if you are running for the first time, the OPTION call might not return 200. 
         If that happens, please re-send the input. We suspect this is happening due to initial start up time.
@@ -63,11 +64,13 @@
       <img src="image/developertool.png" alt="campbell"/>
     </div>
     <div id="second">
-        <p><br> When enetering a search term, please make sure
-        that the term is as specific as possible (i.e., term "mocha" is preferred to "coffee").<br><br></p>
-        <input type="text" id="userInput" placeholder="Enter keyword">
+        <p><br> 2. Because browsers such as Chrome may cache results, which won't allow the content of the site
+          to be refreshed, please <u><b>use Incognito mode</b></u>, if available. <br><br>3. When entering a search term, please make sure
+        that <u><b>the term is as specific as possible</b></u> (i.e., term "mocha" is preferred to "coffee").<br><br><span style="color: red"><b>NOTE</b></span>: Because GTAB library (used for forecasting)
+        relies on PyTrend (unoffical API for Google Trends), sometimes <a href="https://github.com/epfl-dlab/GoogleTrendsAnchorBank/?tab=readme-ov-file#q-im-getting-the-too-many-429-error-responses-error" target="_blank" style="color: blue; text-decoration: underline;">network connection issues</a> occur. During our project this issue seem to persist for a minutes at least
+        and several days at most. If forecasting status fails, please try a few times and, if it still does not work, please try again later.<br></p>
+        <input type="text" id="user-input" placeholder="Enter keyword">
         <button onclick="processInput()" class="button">Submit</button>
-        <!-- <p id="output"></p> -->
 
     </div id="second">
     <br>
@@ -76,6 +79,10 @@
     <div id="cache-status"></div>
     <br>
     <div id="relevant-terms"></div>
+    <br>
+    <div id="nlp-status"></div>
+    <br>
+    <div id="forecast-status"></div>
     <br>
     <div id="chart-status"></div>
     <br>

@@ -1,6 +1,6 @@
 function processInput() {
     // Get the user input value
-    const userInput = document.getElementById("userInput").value;
+    const userInput = document.getElementById("user-input").value;
     const messageValue = document.getElementById("entry-status");
     const apiUrl = 'https://kwwrgpxiqh.execute-api.us-east-1.amazonaws.com/websiteAPI';
     messageValue.textContent = "Thank you for the input! It can take a while for the results to appear. In the meantime, maybe you should go refill your coffee :)";
@@ -18,6 +18,8 @@ function processInput() {
         const chartSpec = "altair/chart.json";
         document.getElementById("cache-status").innerHTML = "Cache Status: " + data.cache_status;
         document.getElementById("relevant-terms").innerHTML = "Relevant Terms: " + data.relevant_terms;
+        document.getElementById("nlp-status").innerHTML = "NLP Status: " + data.nlp_status;
+        document.getElementById("forecast-status").innerHTML = "Forecasting Status: " + data.forecast_status;
         // Use vegaEmbed to render the JSON chart
         vegaEmbed('#chart', chartSpec)
           .then(result => {
