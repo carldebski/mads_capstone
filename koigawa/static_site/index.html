@@ -73,9 +73,8 @@ Generative AI in the form of ChatGPT was used to research on the right syntax to
     <div id="second">
         <p><br> 2. Because browsers such as Chrome may cache results, which won't allow the content of the site
           to be refreshed, please <u><b>use Incognito mode</b></u>, if available. <br><br>3. When entering a search term, please make sure
-        that <u><b>the term is as specific as possible</b></u> (i.e., term "mocha" is preferred to "coffee").<br><br><span style="color: red"><b>NOTE</b></span>: Because GTAB library (used for forecasting)
-        relies on PyTrend (unoffical API for Google Trends), sometimes <a href="https://github.com/epfl-dlab/GoogleTrendsAnchorBank/?tab=readme-ov-file#q-im-getting-the-too-many-429-error-responses-error" target="_blank" style="color: blue; text-decoration: underline;">network connection issues</a> occur. During our project this issue seem to persist for a minutes at least
-        and several days at most. If forecasting status fails, please try a few times and, if it still does not work, please try again later.<br></p>
+        that <u><b>the term is as specific as possible</b></u> (i.e., term "mocha" is preferred to "coffee").<br>
+        </p>
         <input type="text" id="user-input" placeholder="Enter keyword">
         <button onclick="processInput()" class="button">Submit</button>
 
@@ -94,6 +93,43 @@ Generative AI in the form of ChatGPT was used to research on the right syntax to
     <div id="chart-status"></div>
     <br>
     <div id="chart"></div>
+    <h4>Frequently Asked Questions</h4>
+    <p>
+    <b>Q: The tool does not seem to work every time. Is that okay?</b>
+    <br><br>
+    <i>A: Technically yes, the main focus of our project was on keeping the application lightweight and cost effective, which it is. If we added
+      robustness criteria, we might have taken a different approach in design.
+    </i>
+    <br><br><b>Q: I see 503 status for preflight check. What does this mean?</b>
+    <br><br>
+    <i>A: It indicates that CORS (Cross Origin Resource Sharing) was not established. That begins said,
+      it should definitely pass so please try again.
+    </i>
+    <br><br>
+    <b>Q: The return values (e.g., relevant terms) are showing as undefined. What does that mean?</b>
+    <br><br>
+    <i>A: Because API Gateway has maximum 30 seconds timeout, the error indicates that application took too long and no response was returned.
+      This can happen because GTAB library (used for forecasting) can take some time to download Google Trends data. Please retry.
+    </i>
+    <br><br>
+    <b>Q: I'm getting a connection error for forecasting. Why is this happening?</b>
+    <br><br>
+    <i>A: Because GTAB library (used for forecasting)
+      relies on PyTrend (unoffical API for Google Trends), sometimes <a href="https://github.com/epfl-dlab/GoogleTrendsAnchorBank/?tab=readme-ov-file#q-im-getting-the-too-many-429-error-responses-error" target="_blank" style="color: blue; text-decoration: underline;">network connection issues</a> occur. During our project this issue seem to persist for a minutes at least
+      and several days at most. If forecasting status fails, please try a few times and, if it still does not work, please try again later.
+    </i>
+    <br><br>
+    <b>Q: I'm getting error for NLP. Why is this happening?</b>
+    <br><br>
+    <i>A: That would suggest an issue establishing connection with SageMaker inference endpoint, which posts the NLP process application.
+      This error shouldn't happen, so if you see it please reach to koigawa@umich.edu.
+    </i>
+    <br><br>
+    <b>Q: The returned words and content of the charts do not match. Why is this?</b>
+    <br><br>
+    <i>A: This is likely a caching issue. Please refresh the page, making sure you are in incognito mode, and retry.
+    </i>
+    </p>
     </div>
     <script src="script.js"></script>
 </body>
