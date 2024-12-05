@@ -124,6 +124,10 @@ In order to deploy the tool, you have to make sure that you have a valid AWS acc
 
 ### API Gateway 
 <b>Why this service is needed</b>: This service acts as an entry point into AWS for the tool when you are passing values, as JSON payload, entered by the user. This service can be invoked by calling on the URL defined in the endpoint.<br><br>
+<b>Configuration</b>:
+<ul>
+<li>Timeout: 30000 microseconds</li>
+</ul>
 <b>Instructions</b>: 
 <ul>
 <li>Create HTTP API</li>
@@ -134,7 +138,7 @@ In order to deploy the tool, you have to make sure that you have a valid AWS acc
 </ul>
 
 ### Elastic Container Repository (ECR)
-<b>Why this service is needed</b>: In order for the tool to work, Lambda function and SageMaker endpoint both require Docker images. To store Docker images which can be deployed to the two services, the images must be pushed to ECR.<br>
+<b>Why this service is needed</b>: In order for the tool to work, Lambda function and SageMaker endpoint both require Docker images. To store Docker images which can be deployed to the two services, the images must be pushed to ECR.<br><br>
 <b>Instructions</b>:
 <ul>
 <li>Create a private repository within ECR that will contain two images: one for Lambda function and one for SageMaker</li>
