@@ -2,6 +2,11 @@
 # This is a Python 3 image that uses the nginx, gunicorn, flask stack
 # for serving inferences in a stable way.
 
+# This code was not written from scratch by Capstone project members
+# The code copied from AWS code sample and then edited to allow for it to work on our code
+# https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/Dockerfile
+
+
 FROM public.ecr.aws/docker/library/python:3.12
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
