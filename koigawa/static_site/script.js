@@ -2,7 +2,7 @@
 This is the JavaScrip that sends OPTION and POST API calls to API Gateway on AWS.
 Once the results come back, they are rendered on HTML.
 
-Generative AI in the form of ChatGPT was used to research on the right syntax to use.
+Generative AI in the form of ChatGPT was used to research on the right syntax and code snippets to use at some sections.
 */
 
 function processInput() {
