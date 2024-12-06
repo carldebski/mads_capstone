@@ -4,3 +4,4 @@ get_related_words_test.py
 wiki_word_embeddings
 wiki_word_embeddings.vectors.npy
 **/.DS_Store
+**/.ipynb_checkpoints
