@@ -24,14 +24,14 @@ from nltk.corpus import wordnet as wn
 import nltk
 
 nltk_data_path = "/usr/share/nltk_data"
-os.environ['NLTK_DATA'] = nltk_data_path
-nltk.download('wordnet', download_dir=nltk_data_path)
+os.environ["NLTK_DATA"] = nltk_data_path
+nltk.download("wordnet", download_dir=nltk_data_path)
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -47,7 +47,7 @@ class ScoringService(object):
 
     def __init__(self):
         self.model = get_model()
-        nltk.download('wordnet', download_dir=nltk_data_path)
+        nltk.download("wordnet", download_dir=nltk_data_path)
         logger.info(f"Init method called to download nltk to {nltk_data_path}!!")
 
     @classmethod
@@ -56,7 +56,9 @@ class ScoringService(object):
         if cls.model is None:
             files = os.listdir(model_path)
             logger.info(f"Files in dir ({model_path}): {files}")
-            cls.model = KeyedVectors.load("/opt/ml/model/fasttext-wiki-news-subwords-300.model")
+            cls.model = KeyedVectors.load(
+                "/opt/ml/model/fasttext-wiki-news-subwords-300.model"
+            )
 
         return cls.model
 
@@ -67,14 +69,14 @@ class ScoringService(object):
         Args:
             input (a pandas dataframe): The data on which to do the predictions. There will be
                 one prediction per row in the dataframe"""
-        nltk.download('wordnet')
+        nltk.download("wordnet")
 
         model = cls.get_model()
         n_words = 5
-        input = input.replace(" ","").lower()
+        input = input.replace(" ", "").lower()
 
         try:
-            word_cosine = model.most_similar(input, topn=n_words*5)
+            word_cosine = model.most_similar(input, topn=n_words * 5)
 
         except KeyError:
             word_cosine = [(input, 1)]
@@ -85,12 +87,11 @@ class ScoringService(object):
         # extract the words
         words = [row[0] for row in word_cosine]
 
-        # load similar words into fuzzy search query (levenshtein edit distance) 
+        # load similar words into fuzzy search query (levenshtein edit distance)
         fastss = FastSS(words)
 
         # create container for unique related words
         unique_words = []
-
 
         # for each word, check if it has similarities in the list
         # if any of the similar words have already been identified, continue
@@ -116,8 +117,12 @@ class ScoringService(object):
         unique_words = list(unique_words)
 
         # refine list based on relevance using semantic similarity based on wordnet path distance
-        path_similarities = [get_wordnet_path_similarity(input, t) for t in unique_words]
-        ranked_path_similarities = sorted(list(zip(path_similarities, unique_words)), reverse=True)
+        path_similarities = [
+            get_wordnet_path_similarity(input, t) for t in unique_words
+        ]
+        ranked_path_similarities = sorted(
+            list(zip(path_similarities, unique_words)), reverse=True
+        )
         ranked_words = [w[1] for w in ranked_path_similarities]
 
         related_words = (";").join(ranked_words[:n_words])
@@ -133,7 +138,9 @@ app = flask.Flask(__name__)
 def ping():
     """Determine if the container is working and healthy. In this sample container, we declare
     it healthy if we can load the model successfully."""
-    health = ScoringService.get_model() is not None  # You can insert a health check here
+    health = (
+        ScoringService.get_model() is not None
+    )  # You can insert a health check here
 
     status = 200 if health else 404
     return flask.Response(response="\n", status=status, mimetype="application/json")
@@ -152,7 +159,10 @@ def transformation():
         return flask.Response(response=predictions, status=200, mimetype="text/plain")
     except Exception as e:
         logger.error(f"Invocations failed: {e}")
-        return flask.Response(response=f"Failed with {data}", status=415, mimetype="text/plain")
+        return flask.Response(
+            response=f"Failed with {data}", status=415, mimetype="text/plain"
+        )
+
 
 def get_wordnet_path_similarity(search_term, term):
     # this function will retrive the path symilarity of words using wordnet
