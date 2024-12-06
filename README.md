@@ -13,7 +13,7 @@ As this was our final course for the graduate degree program, our main motivatio
 <li>Apply data science knowledge that we have learnt throughout the program, in areas such as machine learning, data pipelines, data visualizations, natural language processing, data mining and cloud computing</li>
 <li>Create some type of tangible output that will help solve and addresses some type of realistic business problems and needs</li>
 </ul>
-Based on the above motivation, we have decided to create a light-weight, cost-effective tool hosted in the cloud that performs forecasting of popularity of semantically related terms. To do so we leverage Google Trends, a website by Google that analyzes popularity of top search queries in Google Search across various regions and languages. Our intended audience for this tool were small retail business owners who can use the tool to keep up with both long-term and short-term trends of product or product types in order to make decisions about stocking and inventory purchases.
+Based on the above motivation, we have decided to create a light-weight, cost-effective tool hosted in the cloud that performs forecasting of popularity of semantically related terms. To do so we leveraged Google Trends, a website by Google that analyzes popularity of top search queries in Google Search across various regions and languages. Our intended audience for this tool were small retail business owners who could use this tool to keep up with both long-term and short-term trends of product or product types in order to make decisions about stocking and inventory purchases.
 <br><br>
 Due to time and resource constraints, we have determined minimally viable product (MVP) criteria as follows:
 
