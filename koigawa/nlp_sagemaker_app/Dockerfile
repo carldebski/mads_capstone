@@ -5,7 +5,7 @@
 # This code was not written from scratch by Capstone project members
 # The code copied from AWS code sample and then edited to allow for it to work on our code
 # https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/Dockerfile
-
+# Licensed under the Apache-2.0 license
 
 FROM public.ecr.aws/docker/library/python:3.12
 

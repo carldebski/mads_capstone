@@ -4,7 +4,7 @@
 # This code was not written from scratch by Capstone project members
 # The code copied from AWS code sample and then edited to allow for it to work on our code
 # https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/decision_trees/predictor.py
-
+# Licensed under the Apache-2.0 license
 
 from __future__ import print_function
 

@@ -2,6 +2,7 @@
 This is the main code of the application that the static website runs on.
 While the final output is JSON, the final outcome of this script is that
 it updates content on S3, which is rendered to the user.
+
 While no meaningful section of the codes were written using generative AI
 some snippets were influced by output from ChatGPT4o.
 """

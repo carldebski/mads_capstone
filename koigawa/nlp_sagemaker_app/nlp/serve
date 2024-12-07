@@ -16,7 +16,7 @@
 # This code was not written by Capstone project members
 # The code copied from below cookie cutter code provided by AWS and then timeout was modified
 # https://github.com/aws/amazon-sagemaker-examples/blob/main/advanced_functionality/scikit_bring_your_own/container/decision_trees/serve
-
+# Licensed under the Apache-2.0 license
 
 import multiprocessing
 import os
