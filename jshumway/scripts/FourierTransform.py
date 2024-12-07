@@ -1,3 +1,5 @@
+# Although no meaningful portion was copied directly, this work was made in collaboration with ChatGPT
+
 import pandas as pd 
 from scipy.fftpack import fft, rfft
 from matplotlib import pyplot as plt 
@@ -36,16 +38,10 @@ if __name__ == "__main__":
     # Perform IFFT to reconstruct the signal for the highest magnitude frequency
     reconstructed_signal = np.fft.ifft(mask).real
 
-    # Scale the reconstructed signal proportionally based on the FFT magnitude
-    #amplitude_factor = positive_magnitude[max_index]
-    #reconstructed_signal *= amplitude_factor / np.max(positive_magnitude)
-
     # Plot the original signal and the highest magnitude frequency component with the date as x-axis
     plt.figure(figsize=(14, 6))
     plt.plot(dates, X, label="Original Data", linestyle='--', color='black')
     plt.plot(dates, reconstructed_signal, label="Seasonal Frequency (Freq: {:.2f})".format(dominant_freq), color='red')
-
-
 
     # Set the title and labels
     plt.title("Original Signal and Dominant Frequency Component")
@@ -57,13 +53,11 @@ if __name__ == "__main__":
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Show only the year
     plt.gca().xaxis.set_minor_locator(mdates.MonthLocator())  # Optionally, add minor ticks for months
 
-    # Rotate the x-axis labels for better visibility
+    # Rotate the x-axis labels
     plt.xticks(rotation=45)
-
-    # Display the legend
+  
     plt.legend()
 
-    # Show the plot
     plt.show()
 
 
@@ -78,7 +72,6 @@ if __name__ == "__main__":
         # Convert weeks to months (approximately 4.345 weeks per month)
         period_in_months = period_in_weeks / 4.345
 
-        # Print human-readable cycle description
         if period_in_weeks < 4:
             print(f"The dominant cycle occurs every {period_in_weeks:.2f} weeks.")
         else:

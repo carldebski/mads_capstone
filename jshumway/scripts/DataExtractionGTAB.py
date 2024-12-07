@@ -1,7 +1,7 @@
 ### Example call from terminal 
 # python DataExtractionGTAB.py --keywords "computer, phone, tablet" --region "US"
 
-
+# Although no meaningful portion was copied directly, this work was made in collaboration with ChatGPT
 
 import pandas as pd   
 import numpy as np

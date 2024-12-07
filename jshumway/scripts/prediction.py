@@ -1,3 +1,5 @@
+# Although no meaningful portion was copied directly, this work was made in collaboration with ChatGPT
+
 import pandas as pd   
 import numpy as np
 import pickle
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     # Merge DataFrames on the 'date' column
     merged_predictions_df = pd.concat(predicted_dfs, axis=1)
 
-    # Remove duplicate 'date' columns (optional, as they will have the same values)
+    # Remove duplicate 'date' columns 
     merged_predictions_df = merged_predictions_df.loc[:, ~merged_predictions_df.columns.duplicated()]
 
     # Reset index to have a clean DataFrame
